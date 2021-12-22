@@ -104,5 +104,5 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
     it <- it + 1
   }
 
-  out <- list(BETAhat = FIT3$BETA, ALPHAhat = FIT2$ALPHA, it = it, ZBETA = FIT1$ZBETA, OMEGA = FIT3$OMEGA, beta.lambda=FIT3$lambda, gamma.lambda=FIT1$lambda)
+  out <- list(beta = FIT3$BETA, alpha = FIT2$ALPHA, it = it, gamma = FIT1$ZBETA, omega = FIT3$OMEGA, beta.lambda=FIT3$lambda, gamma.lambda=FIT1$lambda)
 }

@@ -38,7 +38,7 @@ new_sparsecoint <- function (data, p=1) {
 fitted.sparsecoint <- function (model) {
   fitted <- matrix(NA, nrow(model$data$level)-1, ncol(model$data$level))
   for (i in seq_len(nrow(model$data$level)-1)) {
-    fitted[i,] <- singlestep.sparsecoint(model$ALPHAhat, model$BETAhat, model$ZBETA, model$data$level[i,], model$data$diff_lag[i,])
+    fitted[i,] <- singlestep.sparsecoint(model$alpha, model$beta, model$gamma, model$data$level[i,], model$data$diff_lag[i,])
     fitted[i,] <- fitted[i,] + model$data$level[i,]
   }
   return(fitted)
