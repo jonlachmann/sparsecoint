@@ -1,3 +1,6 @@
+#' Predict
+#'
+#' @export
 predict.sparsecoint <- function (model, h=1) {
   data <- model$data
   for (i in seq_len(h)) {
@@ -8,4 +11,8 @@ predict.sparsecoint <- function (model, h=1) {
     data$level <- rbind(data$level, tail(data$level, 1) + t(forecast))
   }
   return(tail(data$level, h))
+}
+
+singlestep.sparsecoint <- function (alpha, beta, gamma, level_data, diff_lag_data) {
+  forecast <- alpha %*% t(beta) %*% level_data + t(gamma) %*% diff_lag_data
 }
