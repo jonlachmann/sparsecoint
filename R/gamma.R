@@ -14,7 +14,7 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
   # glmnetthresh: tolerance parameter glmnet function
 
   ## OUTPUT
-  # ZBETA: estimate of short-run effects
+  # gamma: estimate of short-run effects
   # P: transformation matrix P derived from Omega
 
 
@@ -25,7 +25,6 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
 
   # Creating data matrices
   Y.matrix <- Y - Z %*% t(Pi)
-  X.matrix <- cbind(1, X)
   if (intercept == T) {
     X.matrix <- cbind(1, X)
   } else {
@@ -88,17 +87,17 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
   GAMMA.Sparse <- GAMMAscaled * YmatrixP.sd
 
 
-  ZBETA <- matrix(NA, ncol = q, nrow = ncol(X.matrix))
+  gamma <- matrix(NA, ncol = q, nrow = ncol(X.matrix))
   for (i.q in 1:q)
   {
     if (intercept == T) {
-      ZBETA[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
+      gamma[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
     } else {
-      ZBETA[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
+      gamma[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
     }
   }
 
-  out <- list(ZBETA = ZBETA, P = P, lambda=lambda.opt)
+  out <- list(gamma = gamma, P = P, lambda=lambda.opt)
 }
 
 NTS.GAMMAFIXED.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p, cutoff = 0.8, intercept = F, glmnetthresh = 1e-04) {

@@ -22,10 +22,10 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
   # glmnetthresh: tolerance parameter glmnet function
 
   ## OUTPUT
-  # BETAhat: estimate of cointegrating vectors
-  # ALPHAhat: estimate of adjustment coefficients
-  # ZBETA: estimate of short-run effects
-  # OMEGA: estimate of inverse covariance matrix
+  # beta: estimate of cointegrating vectors
+  # alpha: estimate of adjustment coefficients
+  # gamma: estimate of short-run effects
+  # omega: estimate of inverse covariance matrix
 
 
   ## START CODE
@@ -84,25 +84,30 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
 
   while ((it < max.iter) & (diff.obj > conv)) {
     # Obtain Gamma
-    FIT1 <- NTS.GAMMA.LassoReg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
+    gamma.fit <- NTS.GAMMA.LassoReg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
     # Obtain Alpha
-    FIT2 <- NTS.ALPHA.Procrusted(Y = Y, X = X, Z = Z, ZBETA = FIT1$ZBETA, r = r, Omega = Omega.init, P = FIT1$P, beta = beta.init)
+    alpha.fit <- NTS.ALPHA.Procrusted(Y = Y, X = X, Z = Z, ZBETA = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, beta = beta.init)
     # Obtain Beta and Omega
-    FIT3 <- NTS.BETA(Y = Y, X = X, Z = Z, ZBETA = FIT1$ZBETA, r = r, Omega = Omega.init, P = FIT1$P, alpha = FIT2$ALPHA, alphastar = FIT2$ALPHAstar, lambda_beta = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
+    beta.fit <- NTS.BETA(Y = Y, X = X, Z = Z, ZBETA = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, alpha = alpha.fit$ALPHA, alphastar = alpha.fit$ALPHAstar, lambda_beta = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
 
 
     # Check convergence
-    beta.new <- FIT3$BETA
-    RESID <- Y - X %*% FIT1$ZBETA - Z %*% FIT3$BETA %*% t(FIT2$ALPHA)
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% FIT3$OMEGA %*% t(RESID))) - log(det(FIT3$OMEGA))
+    beta.new <- beta.fit$BETA
+    RESID <- Y - X %*% gamma.fit$gamma - Z %*% beta.fit$BETA %*% t(alpha.fit$ALPHA)
+    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% beta.fit$OMEGA %*% t(RESID))) - log(det(beta.fit$OMEGA))
     diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
-    beta.init <- matrix(beta.init, nrow = q, ncol = r)
-    alpha.init <- FIT2$ALPHA
+    alpha.init <- alpha.fit$ALPHA
     beta.init <- beta.new
     Pi.init <- alpha.init %*% t(beta.new)
-    Omega.init <- FIT3$OMEGA
+    Omega.init <- beta.fit$OMEGA
     it <- it + 1
   }
 
-  out <- list(beta = FIT3$BETA, alpha = FIT2$ALPHA, it = it, gamma = FIT1$ZBETA, omega = FIT3$OMEGA, beta.lambda=FIT3$lambda, gamma.lambda=FIT1$lambda)
+  out <- list(beta = beta.fit$BETA,
+              alpha = alpha.fit$ALPHA,
+              it = it,
+              gamma = gamma.fit$gamma,
+              omega = beta.fit$OMEGA,
+              beta.lambda=beta.fit$lambda,
+              gamma.lambda=gamma.fit$lambda)
 }

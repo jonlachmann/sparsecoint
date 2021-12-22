@@ -2,18 +2,32 @@
 #'
 #' @export
 pred.sparsecoint <- function (model, h=1) {
-  data <- model$data
+  # Extract the data to be used to calculate the forecast
+  diff_lag <- shiftLag(tail(model$data$diff, 1), tail(model$data$diff_lag, 1))
+  level <- tail(model$data$level, 1)
+  prediction <- matrix(NA, 0, ncol(model$data$level))
+  # Create the forecast step by step
   for (i in seq_len(h)) {
-    forecast <- singlestep.sparsecoint(model$alpha, model$beta, model$gamma, t(tail(data$level, 1)), t(tail(data$diff_lag, 1)))
-    diff_lag_row <- tail(data$diff_lag, 1)[,seq_len(ncol(data$diff_lag)- nrow(forecast))]
-    diff_lag_row <- c(forecast, diff_lag_row)
-    data$diff_lag <- rbind(data$diff_lag, diff_lag_row)
-    data$level <- rbind(data$level, tail(data$level, 1) + t(forecast))
+    forecast <- singlestep.sparsecoint(model$alpha, model$beta, model$gamma, t(level), diff_lag)
+    diff_lag <- shiftLag(forecast, diff_lag)
+    level <- level + t(forecast)
+    prediction <- rbind(prediction, level)
   }
-  return(tail(data$level, h))
+  return(prediction)
 }
 
-#' Single step predictions
+#' Single step predictions on the diff scale
 singlestep.sparsecoint <- function (alpha, beta, gamma, level_data, diff_lag_data) {
   forecast <- alpha %*% t(beta) %*% level_data + t(gamma) %*% diff_lag_data
+}
+
+#' Shift lagged data one step by adding a new observation
+#' @param new The new data
+#' @param lagged The lagged data (in a single row)
+#' @return The lagged data shifted one lag with new as the new first lag
+shiftLag <- function (new, lagged) {
+  new <- as.numeric(new)
+  lagged <- as.numeric(lagged)
+  lagged <- c(new, lagged[seq_len(length(lagged)-length(new))])
+  return(lagged)
 }

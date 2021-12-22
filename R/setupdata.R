@@ -1,3 +1,4 @@
+#' Set up data for the sparsecoint model by diffing and lagging it
 setupData <- function (data, p=1) {
   q <- ncol(data)
   temp_data <- embed(diff(data), p)
