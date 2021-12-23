@@ -8,13 +8,23 @@ sparsecoint <- function (data, p=1) {
 
 #' Fit a sparsecoint model to data
 fit.sparsecoint <- function (model) {
-  rank <- determine_rank(model$data, beta.init=NULL, alpha.init=NULL, p=model$p)
+  rank <- determine_rank(model$data, beta.init = NULL, alpha.init = NULL, p = model$p)
+  if (rank$rhat == 0) {
+    model$message <- "Cointegration rank of zero detected."
+    return(model)
+  }
 
   # Set up lambda grids for gamma and beta
-  lambda_gamma <- matrix(seq(from=1,to=0.001,length=10),nrow=1)
-  lambda_beta <- matrix(seq(from=1,to=0.001,length=10),nrow=1)
+  lambda_gamma <- matrix(seq(from = 1,to = 0.001,length = 20), nrow = 1)
+  lambda_beta <- matrix(seq(from = 1,to = 0.001,length = 20), nrow = 1)
 
-  model <- c(model, SparseCointegration_Lasso(model$data, model$p, r=rank$rhat, lambda.gamma=lambda_gamma, lambda_beta=lambda_beta))
+  model_fit <- SparseCointegration_Lasso(model$data, model$p, r = rank$rhat, lambda.gamma = lambda_gamma, lambda_beta = lambda_beta)
+  model$alpha <- model_fit$alpha
+  model$beta <- model_fit$beta
+  model$beta.lambda <- model_fit$beta.lambda
+  model$gamma <- model_fit$gamma
+  model$gamma.lambda <- model_fit$gamma.lambda
+  model$omega <- model_fit$omega
   model$fitted <- fitted.sparsecoint(model)
   model$residuals <- tail(model$data$level, nrow(model$fitted)) - model$fitted
   model$rank <- rank$rhat
@@ -49,12 +59,27 @@ fitted.sparsecoint <- function (model) {
   return(fitted)
 }
 
+#' Summary function for sparsecoint models
+#' @param model The model object
+#' @return A summary of the model
+#' @export
 summary.sparsecoint <- function (model) {
-  variables <- colnames(model$data)
-  summary <- character()
+  variables <- colnames(model$data$level)
   for (var in variables) {
-    summary <- c(summary, paste0("Variable:", var), "", "Residuals:")
-    summary <- c(summary, summary(model$residuals[,var]), "")
+    cat(var, "residuals:\n")
+    print(summary(model$residuals[,var]))
+    cat("\n")
   }
-  summary <- c(summary, "Coefficients:", )
+  cat("\nCointegration rank:", model$rank, "\n")
+  cat("Short run coefficients:\n")
+  colnames(model$gamma) <- colnames(model$data$level)
+  rownames(model$gamma) <- lagNames(colnames(model$data$level), model$p - 1)
+  print(t(model$gamma))
+  cat("Gamma lambda:", model$gamma.lambda, "\n")
+  cat("\nLong run coefficients\n")
+  cat("Alpha:\n")
+  print(model$alpha)
+  cat("Beta:\n")
+  print(model$beta)
+  cat("Beta lambda:", model$beta.lambda, "\n")
 }

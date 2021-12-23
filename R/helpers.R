@@ -27,3 +27,11 @@ AVERAGE <- function(U) {
   # AUXILIARY FUNCTION
   mean(U[which(is.na(U) == F)])
 }
+
+lagNames <- function (varnames, p) {
+  lagnames <- character()
+  for (i in seq_len(p)) {
+    lagnames <- c(lagnames, paste0(varnames, ".", i))
+  }
+  return(lagnames)
+}

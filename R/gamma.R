@@ -163,3 +163,9 @@ NTS.GAMMAFIXED.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p,
 
   out <- list(ZBETA = ZBETA, P = P)
 }
+
+formatSparseData <- function (Y, X, P) {
+  Pfinal <- kronecker(P, diag(nrow(X)))
+  YmatrixP <- Pfinal %*% Y
+  YmatrixP.sd <- sd(Y)
+}
