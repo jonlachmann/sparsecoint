@@ -30,43 +30,42 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = ma
   Xmatrix <- Z
 
   # Store Estimates of cointegrating vector
-  BETA.Sparse <- matrix(NA, ncol = rank, nrow = ncol(Y))
+  beta_sparse <- matrix(NA, ncol = rank, nrow = ncol(Y))
   optimal_lambda <- numeric(rank)
 
   # Perform Lasso
-  for (i.r in seq_len(rank))
-  { # Determine each cointegrating vector by a Lasso Regression
+  for (i in seq_len(rank)) { # Determine each cointegrating vector by a Lasso Regression
 
     # Standardized Response
-    Ymatrixsd <- Ymatrix[ , i.r] / sd(Ymatrix[ , i.r])
+    Ymatrixsd <- Ymatrix[ , i] / sd(Ymatrix[ , i])
 
     lambda_grid <- restrictLambda(Ymatrixsd, Xmatrix, lambda_grid, glmnetthresh)
 
-    optimal_lambda[i.r] <- crossValidate(cutoff, Ymatrix[ , i.r, drop=F], Xmatrix, lambda_grid, glmnetthresh)
+    optimal_lambda[i] <- crossValidate(cutoff, Ymatrix[ , i, drop=F], Xmatrix, lambda_grid, glmnetthresh)
 
-    LASSOfinal <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = optimal_lambda[i.r], family = "gaussian", thresh = glmnetthresh)
-    BETAscaled <- matrix(LASSOfinal$beta, ncol = 1)
-    BETA.Sparse[, i.r] <- BETAscaled * sd(Ymatrix[, i.r])
+    final_lasso <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = optimal_lambda[i], family = "gaussian", thresh = glmnetthresh)
+    beta_scaled <- matrix(final_lasso$beta, ncol = 1)
+    beta_sparse[, i] <- beta_scaled * sd(Ymatrix[, i])
   } # close Loop over cointegration rank
 
   # Determine Omega, conditional on alpha,beta and gamma
   if (intercept == T) {
-    Resid <- (Y - cbind(1, X) %*% zbeta) - Z %*% BETA.Sparse %*% t(alpha)
+    Resid <- (Y - cbind(1, X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
   } else {
-    Resid <- (Y - cbind(X) %*% zbeta) - Z %*% BETA.Sparse %*% t(alpha)
+    Resid <- (Y - cbind(X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
   }
 
   Resid <- Re(Resid)
   covResid <- cov(Resid)
   if (length(rho.glasso) == 1) {
     glasso_fit <- huge(covResid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
-    OMEGA <- glasso_fit$icov[[1]]
+    omega <- glasso_fit$icov[[1]]
   } else {
     glasso_fit <- huge(Resid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
     huge.BIC <- huge.select(glasso_fit, criterion = "ebic", verbose = F)
-    OMEGA <- huge.BIC$opt.icov
+    omega <- huge.BIC$opt.icov
   }
 
-  out <- list(beta = BETA.Sparse, omega = OMEGA, lambda=optimal_lambda)
+  out <- list(beta = beta_sparse, omega = omega, lambda=optimal_lambda)
 }
 

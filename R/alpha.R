@@ -1,22 +1,17 @@
+#' Function to estimate alpha
+#' @param Y: Response Time Series
+#' @param X: Time Series in Differences
+#' @param Z: Time Series in Levels
+#' @param zbeta: estimate of short-run effects
+#' @param r: cointegration rank
+#' @param Omega: estimate of inverse error covariance matrix
+#' @param P: transformation matrix P derived from Omega
+#' @param beta: estimate of cointegrating vector
+#' @param intercept: F do not include intercept, T include intercept in estimation short-run effects
+#' @return A list containing:
+#' ALPHA: estimate of adjustment coefficients
+#' ALPHAstar: estimate of transformed adjustment coefficients
 nts.alpha.procrusted <- function(Y, X, Z, zbeta, r, Omega, P, beta, intercept = F) {
-  ### FUNCTION TO ESTIMATE ALPHA ###
-
-  ## INPUT
-  # Y: Response Time Series
-  # X: Time Series in Differences
-  # Z: Time Series in Levels
-  # ZBETA: estimate of short-run effects
-  # r: cointegration rank
-  # Omega: estimate of inverse error covariance matrix
-  # P: transformation matrix P derived from Omega
-  # beta: estimate of cointegrating vector
-  # intercept: F do not include intercept, T include intercept in estimation short-run effects
-
-  ## OUTPUT
-  # ALPHA: estimate of adjustment coefficients
-  # ALPHAstar: estimate of transformed adjustment coefficients
-
-  ## START CODE
   # Data matrices
   if (intercept == T) {
     Ymatrix <- Y - cbind(1, X) %*% zbeta

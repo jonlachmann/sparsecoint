@@ -99,34 +99,27 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
   out <- list(rhat = khat, it.r = it.r, rhat_iterations = rhat_iterations, mu = mu, decomp = decomp)
 }
 
+#' Sparse cointegration function used in determine_rank function
+#' p: number of lagged differences
+#' Y: Response Time Series
+#' X: Time Series in Differences
+#' Z: Time Series in Levels
+#' r: cointegration rank
+#' alpha.init: initial value for adjustment coefficients
+#' beta.init: initial value for cointegrating vector
+#' max.iter: maximum number of iterations
+#' conv: convergence parameter
+#' lambda.gamma: tuning paramter short-run effects
+#' lambda_beta: tuning paramter cointegrating vector
+#' rho.glasso: tuning parameter inverse error covariance matrix
+#' cutoff: cutoff value time series cross-validation approach
+#' glmnetthresh: tolerance parameter glmnet function
+#' @return A list containing:
+#' BETAhat: estimate of cointegrating vectors
+#' ALPHAhat: estimate of adjustment coefficients
+#' ZBETA: estimate of short-run effects
+#' OMEGA: estimate of inverse covariance matrix
 SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init, max.iter = 25, conv = 10^-3, lambda.gamma = 0.001, lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), rho.glasso = 0.5, cutoff = 0.8, intercept = F, glmnetthresh = 1e-04) {
-  ### Sparse cointegration function used in determine_rank function ###
-
-  ## INPUT
-  # p: number of lagged differences
-  # Y: Response Time Series
-  # X: Time Series in Differences
-  # Z: Time Series in Levels
-  # r: cointegration rank
-  # alpha.init: initial value for adjustment coefficients
-  # beta.init: initial value for cointegrating vector
-  # max.iter: maximum number of iterations
-  # conv: convergence parameter
-  # lambda.gamma: tuning paramter short-run effects
-  # lambda_beta: tuning paramter cointegrating vector
-  # rho.glasso: tuning parameter inverse error covariance matrix
-  # cutoff: cutoff value time series cross-validation approach
-  # glmnetthresh: tolerance parameter glmnet function
-
-  ## OUTPUT
-  # BETAhat: estimate of cointegrating vectors
-  # ALPHAhat: estimate of adjustment coefficients
-  # ZBETA: estimate of short-run effects
-  # OMEGA: estimate of inverse covariance matrix
-
-
-  ## START CODE
-
   # Dimensions
   q <- dim(Y)[2]
   n <- dim(Y)[1]
@@ -145,8 +138,8 @@ SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init,
   diff.obj <- 10 * conv
   Omega.init <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  RESID <- Y - X %*% matrix(rep(diag(1, q), p - 1), ncol = q, byrow = T) - Z %*% beta.init %*% t(alpha.init)
-  value.obj[1, ] <- (1 / n) * sum(diag(RESID %*% Omega.init %*% t(RESID))) - log(det(Omega.init))
+  residuals <- calcResiduals(Y, X, Z, matrix(rep(diag(1, q), p - 1), ncol = q, byrow = T), beta.init, alpha.init)
+  value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega.init %*% t(residuals))) - log(det(Omega.init))
 
 
   while ((it < max.iter) & (diff.obj > conv)) {
@@ -161,12 +154,9 @@ SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init,
 
     # Check convergence
     beta.new <- beta_fit$beta
-    if (intercept == T) {
-      RESID <- Y - X %*% gamma_fit$zbeta[-1, ] - Z %*% beta_fit$beta %*% t(alpha_fit$ALPHA)
-    } else {
-      RESID <- Y - X %*% gamma_fit$zbeta - Z %*% beta_fit$beta %*% t(alpha_fit$ALPHA)
-    }
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% beta_fit$omega %*% t(RESID))) - log(det(beta_fit$omega))
+    residuals <- calcResiduals(Y, X, Z, gamma_fit$zbeta, beta_fit$beta, alpha_fit$ALPHA)
+
+    value.obj[1 + it, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
     diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
 
     alpha.init <- alpha_fit$ALPHA

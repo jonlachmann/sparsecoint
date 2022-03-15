@@ -73,3 +73,12 @@ crossValidate <- function (cutoff, Ymatrix, Xmatrix, lambdas, glmnetthresh) {
 
   return(lambda.opt)
 }
+
+calcResiduals <- function (Y, X, Z, zbeta, beta, alpha, intercept=T) {
+  if (!intercept) {
+    residuals <- Y - X %*% zbeta[-1, ] - Z %*% beta %*% t(alpha)
+  } else {
+    residuals <- Y - X %*% zbeta - Z %*% beta %*% t(alpha)
+  }
+  return(residuals)
+}
