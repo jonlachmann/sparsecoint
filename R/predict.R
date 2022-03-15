@@ -1,7 +1,8 @@
 #' Predict
 #'
+#' @method predict sparsecoint
 #' @export
-pred.sparsecoint <- function (model, h=1) {
+predict.sparsecoint <- function (model, h=1) {
   # Extract the data to be used to calculate the forecast
   diff_lag <- shiftLag(tail(model$data$diff, 1), tail(model$data$diff_lag, 1))
   level <- tail(model$data$level, 1)

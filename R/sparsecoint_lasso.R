@@ -84,30 +84,29 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
 
   while ((it < max.iter) & (diff.obj > conv)) {
     # Obtain Gamma
-    gamma.fit <- NTS.GAMMA.LassoReg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
+    gamma.fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
     # Obtain Alpha
-    alpha.fit <- NTS.ALPHA.Procrusted(Y = Y, X = X, Z = Z, ZBETA = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, beta = beta.init)
+    alpha.fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, beta = beta.init)
     # Obtain Beta and Omega
-    beta.fit <- NTS.BETA(Y = Y, X = X, Z = Z, ZBETA = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, alpha = alpha.fit$ALPHA, alphastar = alpha.fit$ALPHAstar, lambda_beta = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
-
+    beta.fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma.fit$gamma, rank = r, P = gamma.fit$P, alpha = alpha.fit$ALPHA, alphastar = alpha.fit$ALPHAstar, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
 
     # Check convergence
-    beta.new <- beta.fit$BETA
-    RESID <- Y - X %*% gamma.fit$gamma - Z %*% beta.fit$BETA %*% t(alpha.fit$ALPHA)
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% beta.fit$OMEGA %*% t(RESID))) - log(det(beta.fit$OMEGA))
+    beta.new <- beta.fit$beta
+    RESID <- Y - X %*% gamma.fit$gamma - Z %*% beta.fit$beta %*% t(alpha.fit$ALPHA)
+    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% beta.fit$omega %*% t(RESID))) - log(det(beta.fit$omega))
     diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
     alpha.init <- alpha.fit$ALPHA
     beta.init <- beta.new
     Pi.init <- alpha.init %*% t(beta.new)
-    Omega.init <- beta.fit$OMEGA
+    Omega.init <- beta.fit$omega
     it <- it + 1
   }
 
-  out <- list(beta = beta.fit$BETA,
+  out <- list(beta = beta.fit$beta,
               alpha = alpha.fit$ALPHA,
               it = it,
               gamma = gamma.fit$gamma,
-              omega = beta.fit$OMEGA,
+              omega = beta.fit$omega,
               beta.lambda=beta.fit$lambda,
               gamma.lambda=gamma.fit$lambda)
 }

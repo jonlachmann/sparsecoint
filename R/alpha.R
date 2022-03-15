@@ -1,4 +1,4 @@
-NTS.ALPHA.Procrusted <- function(Y, X, Z, ZBETA, r, Omega, P, beta, intercept = F) {
+nts.alpha.procrusted <- function(Y, X, Z, zbeta, r, Omega, P, beta, intercept = F) {
   ### FUNCTION TO ESTIMATE ALPHA ###
 
   ## INPUT
@@ -19,9 +19,9 @@ NTS.ALPHA.Procrusted <- function(Y, X, Z, ZBETA, r, Omega, P, beta, intercept = 
   ## START CODE
   # Data matrices
   if (intercept == T) {
-    Ymatrix <- Y - cbind(1, X) %*% ZBETA
+    Ymatrix <- Y - cbind(1, X) %*% zbeta
   } else {
-    Ymatrix <- Y - cbind(X) %*% ZBETA
+    Ymatrix <- Y - cbind(X) %*% zbeta
   }
 
   Xmatrix <- Z %*% beta

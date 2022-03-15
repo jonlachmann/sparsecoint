@@ -42,7 +42,7 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
       FIT <- lars(x = Z, y = Yinit[, i], type = "lasso", normalize = F, intercept = F)$beta[-1, ]
       beta.init[, i] <- FIT[nrow(FIT), ] # nrow(FIT)
     }
-    beta.init <- apply(beta.init, 2, NORMALIZATION_UNIT)
+    beta.init <- apply(beta.init, 2, normalisationUnit)
   }
 
   # Preliminaries
@@ -65,18 +65,18 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
       diff.r <- 0
     } else {
       if (ncol(beta.init.fit) > ncol(beta.init)) {
-        beta.init.fit[, 1:ncol(beta.init)] <- beta.init
-        alpha.init.fit[, 1:ncol(beta.init)] <- alpha.init
+        beta.init.fit[, seq_len(ncol(beta.init))] <- beta.init
+        alpha.init.fit[, seq_len(ncol(beta.init))] <- alpha.init
       } else {
         beta.init.fit[, 1:r.init] <- beta.init[, 1:r.init]
         alpha.init.fit[, 1:r.init] <- alpha.init[, 1:r.init]
       }
 
       # Sparse cointegration fit
-      FITLASSO <- SparseCointegration_RSC(Y = Y, X = X, Z = Z, beta.init = beta.init.fit, alpha.init = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, glmnetthresh = glmnetthresh)
+      lasso_fit <- SparseCointegration_RSC(Y = Y, X = X, Z = Z, beta.init = beta.init.fit, alpha.init = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, glmnetthresh = glmnetthresh)
 
       # Response  and predictors in penalized reduced rank regression
-      Y.new <- Y - X %*% FITLASSO$ZBETA
+      Y.new <- Y - X %*% lasso_fit$ZBETA
       X.new <- Z
       M <- t(X.new) %*% X.new
       P <- X.new %*% ginv(M) %*% t(X.new)
@@ -152,29 +152,29 @@ SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init,
   while ((it < max.iter) & (diff.obj > conv)) {
 
     # Obtain Gamma, fixed value of tuning parameter
-    FIT1 <- NTS.GAMMAFIXED.LassoReg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
+    gamma_fit <- nts.gamma.fixed.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
     # Obtain alpha
-    FIT2 <- NTS.ALPHA.Procrusted(Y = Y, X = X, Z = Z, ZBETA = FIT1$ZBETA, r = r, Omega = Omega.init, P = FIT1$P, beta = beta.init)
+    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, r = r, Omega = Omega.init, P = gamma_fit$P, beta = beta.init)
     # abtain beta and omega
-    FIT3 <- NTS.BETA(Y = Y, X = X, Z = Z, ZBETA = FIT1$ZBETA, r = r, Omega = Omega.init, P = FIT1$P, alpha = FIT2$ALPHA, alphastar = FIT2$ALPHAstar, lambda_beta = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
+    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, rank = r, P = gamma_fit$P, alpha = alpha_fit$ALPHA, alphastar = alpha_fit$ALPHAstar, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
 
 
     # Check convergence
-    beta.new <- FIT3$BETA
+    beta.new <- beta_fit$beta
     if (intercept == T) {
-      RESID <- Y - X %*% FIT1$ZBETA[-1, ] - Z %*% FIT3$BETA %*% t(FIT2$ALPHA)
+      RESID <- Y - X %*% gamma_fit$zbeta[-1, ] - Z %*% beta_fit$beta %*% t(alpha_fit$ALPHA)
     } else {
-      RESID <- Y - X %*% FIT1$ZBETA - Z %*% FIT3$BETA %*% t(FIT2$ALPHA)
+      RESID <- Y - X %*% gamma_fit$zbeta - Z %*% beta_fit$beta %*% t(alpha_fit$ALPHA)
     }
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% FIT3$OMEGA %*% t(RESID))) - log(det(FIT3$OMEGA))
+    value.obj[1 + it, ] <- (1 / n) * sum(diag((RESID) %*% beta_fit$omega %*% t(RESID))) - log(det(beta_fit$omega))
     diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
-    beta.init <- matrix(beta.init, nrow = q, ncol = r)
-    alpha.init <- FIT2$ALPHA
+
+    alpha.init <- alpha_fit$ALPHA
     beta.init <- beta.new
     Pi.init <- alpha.init %*% t(beta.new) ###### Pi.init!!!
-    Omega.init <- FIT3$OMEGA
+    Omega.init <- beta_fit$omega
     it <- it + 1
   }
 
-  out <- list(BETAhat = FIT3$BETA, ALPHAhat = FIT2$ALPHA, it = it, ZBETA = FIT1$ZBETA, OMEGA = FIT3$OMEGA)
+  out <- list(BETAhat = beta_fit$beta, ALPHAhat = alpha_fit$ALPHA, it = it, ZBETA = gamma_fit$zbeta, OMEGA = beta_fit$omega)
 }
