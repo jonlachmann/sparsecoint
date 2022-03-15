@@ -37,19 +37,20 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
 
 
   # Final estimate
-  Pfinal <- kronecker(P, diag(rep(1, nrow(X.matrix))))
-  YmatrixP <- Pfinal %*% c(Y.matrix)
+  sparse_data <- formatSparseData(Y.matrix, X.matrix, P)
+  #Pfinal <- kronecker(P, diag(rep(1, nrow(X.matrix))))
+  #YmatrixP <- Pfinal %*% c(Y.matrix)
   YmatrixP.sd <- sd(Y.matrix)
-  YmatrixP.scaled <- YmatrixP / YmatrixP.sd
-  XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X.matrix))) %*% X.matrix)
+  #YmatrixP.scaled <- YmatrixP / YmatrixP.sd
+  #XmatrixP <- kronecker(P, X.matrix)
 
   # Lasso Estimation
   # Determine lambda sequence: exclude all zero-solution
-  determine_lambdasequence <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = glmnetthresh)
+  determine_lambdasequence <- glmnet(y = sparse_data$Y, x = sparse_data$X, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = glmnetthresh)
   lambda_restricted <- matrix(lambda.gamma[1, which(determine_lambdasequence$df != 0)], nrow = 1)
 
   if (length(which(determine_lambdasequence$df != 0)) <= 1) {
-    determine_lambdasequence <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
+    determine_lambdasequence <- glmnet(y = sparse_data$Y, x = sparse_data$X, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
     lambda_restricted <- matrix(determine_lambdasequence$lambda, nrow = 1)
   }
 
@@ -59,22 +60,32 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
 
   for (i in cutoff.n:nrow(Y) - 1) { # Loop to calculate cross-validation score
     # Training Data
-    Ytrain <- YmatrixP[1:i, ]
+    Ytrain <- Y.matrix[1:i, ]
+    Xtrain <- X.matrix[1:i, ]
+    sparse_train <- formatSparseData(Ytrain, Xtrain, P)
     Ytrain.sd <- sd(Ytrain)
-    Ytrain.scaled <- Ytrain / Ytrain.sd
-    Xtrain <- XmatrixP[1:i, ]
 
     # Test Data
-    Ytest <- YmatrixP[i + 1, ]
-    Xtest <- XmatrixP[i + 1, ]
+    Ytest <- Y.matrix[i + 1, ]
+    Xtest <- X.matrix[i + 1, ]
+
+    # Training Data
+    #Ytrain <- YmatrixP[1:i, ]
+    #Ytrain.sd <- sd(Ytrain)
+    #Ytrain.scaled <- Ytrain / Ytrain.sd
+    #Xtrain <- XmatrixP[1:i, ]
+
+    # Test Data
+    #Ytest <- YmatrixP[i + 1, ]
+    #Xtest <- XmatrixP[i + 1, ]
 
     # Estimation
-    GAMMA.scaled <- glmnet(y = Ytrain.scaled, x = Xtrain, lambda = lambda_restricted, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
-    G_GAMMASD <- matrix(GAMMA.scaled$beta[, which(GAMMA.scaled$df != 0)], nrow = ncol(Xtrain)) # GAMMA in standardized scale
+    GAMMA.scaled <- glmnet(y = sparse_train$Y, x = sparse_train$X, lambda = lambda_restricted, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
+    G_GAMMASD <- matrix(GAMMA.scaled$beta[, which(GAMMA.scaled$df != 0)], nrow = ncol(sparse_train$X)) # GAMMA in standardized scale
     G_GAMMA <- as.matrix(G_GAMMASD * Ytrain.sd)
 
     G_CV <- apply(G_GAMMA, 2, CVscore.Reg, Y.data = Ytest, X.data = Xtest, Y.sd = Ytrain.sd) # CVscore
-    CVscore.gamma[i - cutoff.n + 1, c(which(GAMMA.scaled$df != 0))] <- G_CV
+    CVscore.gamma[i - cutoff.n + 1, which(GAMMA.scaled$df != 0)] <- G_CV
   }
 
   CVscore.AVAILABLE <- as.matrix(CVscore.gamma[, apply(CVscore.gamma, 2, AVAILABLE_LAMBDA)])
@@ -82,7 +93,7 @@ NTS.GAMMA.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
   lambda.opt <- lambda_restricted_AVAILABLE[which.min(apply(CVscore.AVAILABLE, 2, AVERAGE))]
 
 
-  LASSOfinal <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
+  LASSOfinal <- glmnet(y = sparse_data$Y, x = sparse_data$X, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
   GAMMAscaled <- matrix(LASSOfinal$beta, ncol = 1)
   GAMMA.Sparse <- GAMMAscaled * YmatrixP.sd
 
@@ -125,7 +136,7 @@ NTS.GAMMAFIXED.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p,
 
   # Creating data matrices
   Y.matrix <- Y - Z %*% t(Pi)
-  X.matrix <- cbind(1, X)
+
   if (intercept == T) {
     X.matrix <- cbind(1, X)
   } else {
@@ -140,7 +151,7 @@ NTS.GAMMAFIXED.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p,
 
   # Final estimate
   Pfinal <- kronecker(P, diag(rep(1, nrow(X.matrix))))
-  YmatrixP <- Pfinal %*% c(Y.matrix)
+  YmatrixP <- Pfinal %*% Y.matrix
   YmatrixP.sd <- sd(Y.matrix)
   YmatrixP.scaled <- YmatrixP / YmatrixP.sd
   XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X.matrix))) %*% X.matrix)
@@ -166,6 +177,8 @@ NTS.GAMMAFIXED.LassoReg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p,
 
 formatSparseData <- function (Y, X, P) {
   Pfinal <- kronecker(P, diag(nrow(X)))
-  YmatrixP <- Pfinal %*% Y
-  YmatrixP.sd <- sd(Y)
+  sparse <- list()
+  sparse$Y <- Pfinal %*% as.numeric(Y) / sd(Y)
+  sparse$X <- kronecker(P %*% diag(nrow(P)), diag(nrow(X)) %*% X)
+  return(sparse)
 }

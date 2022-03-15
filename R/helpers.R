@@ -1,7 +1,7 @@
 CVscore.Reg <- function(U, X.data, Y.data, Y.sd) {
   # AUXILIARY FUNCTION
   # Standardized Mean Squared  Error
-  return(mean((Y.data - X.data %*% U)^2 / Y.sd))
+  return(mean((Y.data - X.data %*% t(matrix(U, length(Y.data))))^2 / Y.sd))
 }
 
 NORMALIZATION_UNIT <- function(U) {
