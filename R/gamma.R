@@ -39,7 +39,10 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
   # Determine lambda sequence: exclude all zero-solution
   lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda.gamma, glmnetthresh)
 
-  lambda.opt <- crossValidate(cutoff, YmatrixP, XmatrixP, lambda_restricted, glmnetthresh)
+  # Rearrange X and Y to get them in time order for cross validation
+  XY <- rearrangeYX(YmatrixP, XmatrixP, q)
+
+  lambda.opt <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, glmnetthresh)
 
   LASSOfinal <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
   GAMMAscaled <- matrix(LASSOfinal$beta, ncol = 1)

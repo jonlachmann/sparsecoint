@@ -1,34 +1,28 @@
+#' Function to determine the cointegration rank using the rank selection criterion
+#' @param Y: Response Time Series
+#' @param X: Time Series in Differences
+#' @param Z: Time Series in Levels
+#' @param r.init: initial value of cointegration rank
+#' @param p: number of lags to be included
+#' @param max.iter.lasso: maximum number of iterations PML
+#' @param conv.lasso: convergence parameter
+#' @param max.iter.r: maximu number of iterations to compute cointegration rank
+#' @param beta.init: initial value for beta
+#' @param alpha.init: initial value for alpha
+#' @param rho.glasso: tuning parameter for inverse covariance matrix
+#' @param lambda.gamma: tuning parameter for GAMMA
+#' @param lambda.beta: tuning parameter for BETA
+#' @param glmnetthresh: tolerance parameter glmnet function
+#' @return A List containing;
+#' rhat: estimated cointegration rank
+#' it.r: number of iterations
+#' rhat_iterations: estimate of cointegration rank in each iteration
+#' mu: value of mu
+#' decomp: eigenvalue decomposition
 determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lasso = 10^-2, max.iter.r = 5, beta.init, alpha.init, rho.glasso = 0.1, lambda.gamma = matrix(seq(from = 0.1, to = 0.001, length = 10), nrow = 1), lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), glmnetthresh = 1e-04) {
-  ### FUNCTION TO DETERMINE THE COINTEGRATION RANK USING THE RANK SELECTION CRITERION ###
-
   Y <- data$diff
   X <- data$diff_lag
   Z <- data$level
-
-  # INPUT
-  # Y: Response Time Series
-  # X: Time Series in Differences
-  # Z: Time Series in Levels
-  # r.init: initial value of cointegration rank
-  # p: number of lags to be included
-  # max.iter.lasso: maximum number of iterations PML
-  # conv.lasso: convergence parameter
-  # max.iter.r: maximu number of iterations to compute cointegration rank
-  # beta.init: initial value for beta
-  # alpha.init: initial value for alpha
-  # rho.glasso: tuning parameter for inverse covariance matrix
-  # lambda.gamma: tuning parameter for GAMMA
-  # lambda.beta: tuning parameter for BETA
-  # glmnetthresh: tolerance parameter glmnet function
-
-  # OUTPUT
-  # rhat: estimated cointegration rank
-  # it.r: number of iterations
-  # rhat_iterations: estimate of cointegration rank in each iteration
-  # mu: value of mu
-  # decomp: eigenvalue decomposition
-
-  # START CODE
 
   # Starting values
   if (is.null(beta.init) & is.null(alpha.init)) {
@@ -51,11 +45,11 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
     r.init <- ncol(Y)
   }
   diff.r <- 1
-  it.r <- 1
+  iter <- 1
   rhat_iterations <- matrix(ncol = max.iter.r, nrow = 1)
 
 
-  while ((it.r < max.iter.r) & (diff.r > 0)) {
+  while ((iter < max.iter.r) & (diff.r > 0)) {
     # Initialization
     beta.init.fit <- matrix(0, ncol = r.init, nrow = ncol(Y))
     alpha.init.fit <- matrix(0, ncol = r.init, nrow = ncol(Y))
@@ -76,7 +70,7 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
       lasso_fit <- SparseCointegration_RSC(Y = Y, X = X, Z = Z, beta.init = beta.init.fit, alpha.init = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, glmnetthresh = glmnetthresh)
 
       # Response  and predictors in penalized reduced rank regression
-      Y.new <- Y - X %*% lasso_fit$ZBETA
+      Y.new <- Y - X %*% lasso_fit$zbeta
       X.new <- Z
       M <- t(X.new) %*% X.new
       P <- X.new %*% ginv(M) %*% t(X.new)
@@ -89,31 +83,31 @@ determine_rank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lass
       khat <- length(which(decomp > mu | decomp == mu))
 
       # Convergence checking
-      rhat_iterations[, it.r] <- khat
+      rhat_iterations[, iter] <- khat
       diff.r <- abs(r.init - khat)
       r.init <- khat
-      it.r <- it.r + 1
+      iter <- iter + 1
     }
   }
 
-  out <- list(rhat = khat, it.r = it.r, rhat_iterations = rhat_iterations, mu = mu, decomp = decomp)
+  out <- list(rhat = khat, iter = iter, rhat_iterations = rhat_iterations, mu = mu, decomp = decomp)
 }
 
 #' Sparse cointegration function used in determine_rank function
-#' p: number of lagged differences
-#' Y: Response Time Series
-#' X: Time Series in Differences
-#' Z: Time Series in Levels
-#' r: cointegration rank
-#' alpha.init: initial value for adjustment coefficients
-#' beta.init: initial value for cointegrating vector
-#' max.iter: maximum number of iterations
-#' conv: convergence parameter
-#' lambda.gamma: tuning paramter short-run effects
-#' lambda_beta: tuning paramter cointegrating vector
-#' rho.glasso: tuning parameter inverse error covariance matrix
-#' cutoff: cutoff value time series cross-validation approach
-#' glmnetthresh: tolerance parameter glmnet function
+#' @param p: number of lagged differences
+#' @param Y: Response Time Series
+#' @param X: Time Series in Differences
+#' @param Z: Time Series in Levels
+#' @param r: cointegration rank
+#' @param alpha.init: initial value for adjustment coefficients
+#' @param beta.init: initial value for cointegrating vector
+#' @param max.iter: maximum number of iterations
+#' @param conv: convergence parameter
+#' @param lambda.gamma: tuning paramter short-run effects
+#' @param lambda_beta: tuning paramter cointegrating vector
+#' @param rho.glasso: tuning parameter inverse error covariance matrix
+#' @param cutoff: cutoff value time series cross-validation approach
+#' @param glmnetthresh: tolerance parameter glmnet function
 #' @return A list containing:
 #' BETAhat: estimate of cointegrating vectors
 #' ALPHAhat: estimate of adjustment coefficients
@@ -134,7 +128,7 @@ SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init,
   }
 
   # Convergence parameters: initialization
-  it <- 1
+  iter <- 1
   diff.obj <- 10 * conv
   Omega.init <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
@@ -142,29 +136,29 @@ SparseCointegration_RSC <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init,
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega.init %*% t(residuals))) - log(det(Omega.init))
 
 
-  while ((it < max.iter) & (diff.obj > conv)) {
+  while ((iter < max.iter) & (diff.obj > conv)) {
 
     # Obtain Gamma, fixed value of tuning parameter
     gamma_fit <- nts.gamma.fixed.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
     # Obtain alpha
     alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, r = r, Omega = Omega.init, P = gamma_fit$P, beta = beta.init)
     # abtain beta and omega
-    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, rank = r, P = gamma_fit$P, alpha = alpha_fit$ALPHA, alphastar = alpha_fit$ALPHAstar, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
+    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, rank = r, P = gamma_fit$P, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
 
 
     # Check convergence
     beta.new <- beta_fit$beta
-    residuals <- calcResiduals(Y, X, Z, gamma_fit$zbeta, beta_fit$beta, alpha_fit$ALPHA)
+    residuals <- calcResiduals(Y, X, Z, gamma_fit$zbeta, beta_fit$beta, alpha_fit$alpha)
 
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
-    diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
+    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
+    diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
 
-    alpha.init <- alpha_fit$ALPHA
+    alpha.init <- alpha_fit$alpha
     beta.init <- beta.new
     Pi.init <- alpha.init %*% t(beta.new) ###### Pi.init!!!
     Omega.init <- beta_fit$omega
-    it <- it + 1
+    iter <- iter + 1
   }
 
-  out <- list(BETAhat = beta_fit$beta, ALPHAhat = alpha_fit$ALPHA, it = it, ZBETA = gamma_fit$zbeta, OMEGA = beta_fit$omega)
+  out <- list(beta = beta_fit$beta, alpha = alpha_fit$alpha, it = iter, zbeta = gamma_fit$zbeta, omega = beta_fit$omega)
 }

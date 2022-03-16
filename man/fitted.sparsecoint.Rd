@@ -4,7 +4,12 @@
 \alias{fitted.sparsecoint}
 \title{Calculate fitted values as single step ahead forecasts}
 \usage{
-\method{fitted}{sparsecoint}(model)
+\method{fitted}{sparsecoint}(x, recalculate = FALSE)
+}
+\arguments{
+\item{x}{The sparsecoint model object}
+
+\item{recalculate}{Should the fitted values be recalculated, default is FALSE}
 }
 \description{
 Calculate fitted values as single step ahead forecasts

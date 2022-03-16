@@ -41,7 +41,7 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = ma
 
     lambda_grid <- restrictLambda(Ymatrixsd, Xmatrix, lambda_grid, glmnetthresh)
 
-    optimal_lambda[i] <- crossValidate(cutoff, Ymatrix[ , i, drop=F], Xmatrix, lambda_grid, glmnetthresh)
+    optimal_lambda[i] <- crossValidate(1, cutoff, Ymatrix[ , i, drop=F], Xmatrix, lambda_grid, glmnetthresh)
 
     final_lasso <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = optimal_lambda[i], family = "gaussian", thresh = glmnetthresh)
     beta_scaled <- matrix(final_lasso$beta, ncol = 1)
@@ -49,22 +49,7 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = ma
   } # close Loop over cointegration rank
 
   # Determine Omega, conditional on alpha,beta and gamma
-  if (intercept == T) {
-    Resid <- (Y - cbind(1, X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
-  } else {
-    Resid <- (Y - cbind(X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
-  }
-
-  Resid <- Re(Resid)
-  covResid <- cov(Resid)
-  if (length(rho.glasso) == 1) {
-    glasso_fit <- huge(covResid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
-    omega <- glasso_fit$icov[[1]]
-  } else {
-    glasso_fit <- huge(Resid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
-    huge.BIC <- huge.select(glasso_fit, criterion = "ebic", verbose = F)
-    omega <- huge.BIC$opt.icov
-  }
+  omega <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho.glasso)
 
   out <- list(beta = beta_sparse, omega = omega, lambda=optimal_lambda)
 }

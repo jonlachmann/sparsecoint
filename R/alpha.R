@@ -25,11 +25,11 @@ nts.alpha.procrusted <- function(Y, X, Z, zbeta, r, Omega, P, beta, intercept = 
 
   # Singular Value Decomposition to compute ALPHA
   SingDecomp <- svd(t(Xmatrix) %*% Ymatrix %*% P)
-  ALPHAstar <- t(SingDecomp$u %*% t(SingDecomp$v))
+  alpha_star <- t(SingDecomp$u %*% t(SingDecomp$v))
   if (r == 1) {
-    ALPHAstar <- matrix(ALPHAstar, ncol = 1)
+    alpha_star <- matrix(alpha_star, ncol = 1)
   }
-  ALPHA <- Pmin %*% ALPHAstar
+  alpha <- Pmin %*% alpha_star
 
-  out <- list(ALPHA = ALPHA, ALPHAstar = ALPHAstar)
+  out <- list(alpha = alpha, alpha_star = alpha_star)
 }

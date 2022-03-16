@@ -6,6 +6,11 @@
 \usage{
 new_sparsecoint(data, p = 1)
 }
+\arguments{
+\item{data}{The data to use}
+
+\item{p}{The lag order to use}
+}
 \description{
 Create a new model object
 }

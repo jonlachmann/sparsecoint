@@ -18,7 +18,7 @@
 #' alpha: estimate of adjustment coefficients
 #' gamma: estimate of short-run effects
 #' omega: estimate of inverse covariance matrix
-SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init = NULL, max.iter = 10, conv = 10^-2, lambda.gamma = matrix(seq(from = 0.01, to = 0.001, length = 5), nrow = 1), rho.glasso = seq(from = 1, to = 0.1, length = 5), lambda_beta = matrix(seq(from = 0.1, to = 0.001, length = 100), nrow = 1), cutoff = 0.8, glmnetthresh = 1e-04) {
+SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init = NULL, max.iter = 10, conv = 10^-2, lambda.gamma, rho.glasso = seq(from = 1, to = 0.1, length = 5), lambda_beta, cutoff = 0.8, glmnetthresh = 1e-04) {
   Y <- data$diff
   X <- data$diff_lag
   Z <- data$level
@@ -35,7 +35,7 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
   Pi.init <- init$Pi
 
   # Convergence parameters: initialization
-  it <- 1
+  iter <- 1
   diff.obj <- 10 * conv
   Omega.init <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
@@ -43,33 +43,33 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega.init %*% t(residuals))) - log(det(Omega.init))
 
 
-  while ((it < max.iter) & (diff.obj > conv)) {
+  while ((iter < max.iter) & (diff.obj > conv)) {
     # Obtain Gamma
-    gamma.fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
+    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, glmnetthresh = glmnetthresh)
     # Obtain Alpha
-    alpha.fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma.fit$gamma, r = r, Omega = Omega.init, P = gamma.fit$P, beta = beta.init)
+    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma_fit$gamma, r = r, Omega = Omega.init, P = gamma_fit$P, beta = beta.init)
     # Obtain Beta and Omega
-    beta.fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma.fit$gamma, rank = r, P = gamma.fit$P, alpha = alpha.fit$ALPHA, alphastar = alpha.fit$ALPHAstar, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
+    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$gamma, rank = r, P = gamma_fit$P, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, glmnetthresh = glmnetthresh)
 
     # Check convergence
-    beta.new <- beta.fit$beta
-    residuals <- Y - X %*% gamma.fit$gamma - Z %*% beta.fit$beta %*% t(alpha.fit$ALPHA)
-    value.obj[1 + it, ] <- (1 / n) * sum(diag((residuals) %*% beta.fit$omega %*% t(residuals))) - log(det(beta.fit$omega))
-    diff.obj <- abs(value.obj[1 + it, ] - value.obj[it, ]) / abs(value.obj[it, ])
-    alpha.init <- alpha.fit$ALPHA
+    beta.new <- beta_fit$beta
+    residuals <- Y - X %*% gamma_fit$gamma - Z %*% beta_fit$beta %*% t(alpha_fit$alpha)
+    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
+    diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
+    alpha.init <- alpha_fit$alpha
     beta.init <- beta.new
     Pi.init <- alpha.init %*% t(beta.new)
-    Omega.init <- beta.fit$omega
-    it <- it + 1
+    Omega.init <- beta_fit$omega
+    iter <- iter + 1
   }
 
-  out <- list(beta = beta.fit$beta,
-              alpha = alpha.fit$ALPHA,
-              it = it,
-              gamma = gamma.fit$gamma,
-              omega = beta.fit$omega,
-              beta.lambda=beta.fit$lambda,
-              gamma.lambda=gamma.fit$lambda)
+  out <- list(beta = beta_fit$beta,
+              alpha = alpha_fit$alpha,
+              iter = iter,
+              gamma = gamma_fit$gamma,
+              omega = beta_fit$omega,
+              beta.lambda=beta_fit$lambda,
+              gamma.lambda=gamma_fit$lambda)
 }
 
 sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.init=NULL) {
