@@ -69,7 +69,8 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
               gamma = gamma_fit$gamma,
               omega = beta_fit$omega,
               beta.lambda=beta_fit$lambda,
-              gamma.lambda=gamma_fit$lambda)
+              gamma.lambda=gamma_fit$lambda,
+              omega.rho=beta_fit$rho)
 }
 
 sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.init=NULL) {
@@ -89,8 +90,8 @@ sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.
     beta.init <- matrix(NA, ncol = rank, nrow = q)
     Yinit <- (Y - X %*% matrix(rbind(rep(diag(1, ncol(Y)), p - 1)), ncol = ncol(Y), byrow = T)) %*% alpha.init
     for (i in 1:rank) {
-      FIT <- lars(x = Z, y = Yinit[, i], type = "lasso", normalize = F, intercept = F)$beta[-1, ]
-      beta.init[, i] <- FIT[nrow(FIT), ]
+      fit <- lars(x = Z, y = Yinit[, i], type = "lasso", normalize = F, intercept = F)$beta[-1, ]
+      beta.init[, i] <- fit[nrow(fit), ]
     }
     Pi.init <- alpha.init %*% t(beta.init)
   }
@@ -101,8 +102,8 @@ sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.
     beta.init <- matrix(NA, ncol = rank, nrow = q)
     Yinit <- (Y - X %*% matrix(rbind(rep(diag(1, ncol(Y)), p - 1)), ncol = ncol(Y), byrow = T)) %*% alpha.init
     for (i in 1:rank) {
-      FIT <- lars(x = Z, y = Yinit[, i], type = "lasso", normalize = F, intercept = F)$beta[-1, ]
-      beta.init[, i] <- FIT[nrow(FIT), ]
+      fit <- lars(x = Z, y = Yinit[, i], type = "lasso", normalize = F, intercept = F)$beta[-1, ]
+      beta.init[, i] <- fit[nrow(fit), ]
     }
     Pi.init <- alpha.init %*% t(beta.init)
   }

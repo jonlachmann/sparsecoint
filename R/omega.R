@@ -1,5 +1,5 @@
 
-nts.omega <- function (Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho.glasso) {
+nts.omega <- function (Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho) {
   # Determine Omega, conditional on alpha,beta and gamma
   if (intercept == T) {
     Resid <- (Y - cbind(1, X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
@@ -9,14 +9,15 @@ nts.omega <- function (Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho.glasso
 
   Resid <- Re(Resid)
   covResid <- cov(Resid)
-  if (length(rho.glasso) == 1) {
-    glasso_fit <- huge(covResid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
-    omega <- glasso_fit$icov[[1]]
+  if (length(rho) == 1) {
+    glasso_fit <- glassor::glassor(covResid, rho = rho, nobs=nrow(Y))
+    omega <- glasso_fit$wi
   } else {
-    glasso_fit <- huge(Resid, lambda = rho.glasso, method = "glasso", cov.output = T, verbose = F)
-    huge.BIC <- huge.select(glasso_fit, criterion = "ebic", verbose = F)
-    omega <- huge.BIC$opt.icov
+    glasso_fit <- glassor::glassorpath(covResid, rho = rho, nobs=nrow(Y))
+    glasso_opt <- glassor::glassor.select(glasso_fit)
+    omega <- glasso_opt$wi
+    rho <- glasso_opt$rho
   }
 
-  return(omega)
+  return(list(omega=omega, rho=rho))
 }

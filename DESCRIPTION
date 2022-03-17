@@ -10,10 +10,8 @@ License: What license is it under?
 Depends: R (>= 3.5.0),
     mvtnorm,
     glmnet,
-    MASS,
-    glasso,
     lars,
-    huge
+    glassor
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)

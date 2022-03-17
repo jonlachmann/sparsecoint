@@ -26,6 +26,7 @@ fit.sparsecoint <- function (model) {
   model$gamma <- model_fit$gamma
   model$gamma.lambda <- model_fit$gamma.lambda
   model$omega <- model_fit$omega
+  model$omega.rho <- model_fit$omega.rho
   model$fitted <- fitted(model)
   model$residuals <- residuals(model)
   model$rank <- rank$rhat
@@ -74,7 +75,7 @@ fitted.sparsecoint <- function (x, recalculate=FALSE) {
 #' @export
 residuals.sparsecoint <- function (x) {
   fitted <- fitted(x)
-  residuals <- tail(model$data$level, nrow(fitted)) - fitted
+  residuals <- tail(x$data$level, nrow(fitted)) - fitted
   return(residuals)
 }
 

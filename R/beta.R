@@ -49,8 +49,8 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = ma
   } # close Loop over cointegration rank
 
   # Determine Omega, conditional on alpha,beta and gamma
-  omega <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho.glasso)
+  omega_res <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho.glasso)
 
-  out <- list(beta = beta_sparse, omega = omega, lambda=optimal_lambda)
+  out <- list(beta=beta_sparse, omega=omega_res$omega, rho=omega_res$rho, lambda=optimal_lambda)
 }
 
