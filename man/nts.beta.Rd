@@ -15,41 +15,41 @@ nts.beta(
   P,
   alpha,
   alphastar,
-  lambda_grid = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1),
+  lambda_grid = NULL,
   rho.glasso,
   cutoff,
   intercept = F,
-  glmnetthresh = 1e-04
+  tol = 1e-04
 )
 }
 \arguments{
-\item{Y:}{Response Time Series}
+\item{Y}{Response Time Series}
 
-\item{X:}{Time Series in Differences}
+\item{X}{Time Series in Differences}
 
-\item{Z:}{Time Series in Levels}
+\item{Z}{Time Series in Levels}
 
-\item{zbeta:}{estimate of short-run effects}
+\item{zbeta}{estimate of short-run effects}
 
-\item{rank:}{cointegration rank}
+\item{rank}{cointegration rank}
 
-\item{Omega:}{estimate of inverse error covariance matrix}
+\item{P}{transformation matrix P derived from Omega}
 
-\item{P:}{transformation matrix P derived from Omega}
+\item{alpha}{estimate of adjustment coefficients}
 
-\item{alpha:}{estimate of adjustment coefficients}
+\item{alphastar}{estimate of transformed adjustment coefficients}
 
-\item{alphastar:}{estimate of transformed adjustment coefficients}
+\item{lambda_grid}{tuning paramter cointegrating vector}
 
-\item{lambda_grid:}{tuning paramter cointegrating vector}
+\item{rho.glasso}{tuning parameter inverse error covariance matrix}
 
-\item{rho.glasso:}{tuning parameter inverse error covariance matrix}
+\item{cutoff}{cutoff value time series cross-validation approach}
 
-\item{cutoff:}{cutoff value time series cross-validation approach}
+\item{intercept}{F do not include intercept, T include intercept in estimation short-run effects}
 
-\item{intercept:}{F do not include intercept, T include intercept in estimation short-run effects}
+\item{tol}{tolerance parameter glmnet function}
 
-\item{glmnetthresh:}{tolerance parameter glmnet function}
+\item{Omega}{estimate of inverse error covariance matrix}
 }
 \value{
 A list containing:

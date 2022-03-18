@@ -13,7 +13,7 @@ nts.gamma.fixed.lassoreg(
   lambda.gamma = 0.001,
   p,
   intercept = F,
-  glmnetthresh = 1e-04
+  tol = 1e-04
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ nts.gamma.fixed.lassoreg(
 
 \item{intercept:}{F do not include intercept, T include intercept}
 
-\item{glmnetthresh:}{tolerance parameter glmnet function}
+\item{tol:}{tolerance parameter glmnet function}
 }
 \value{
 A list containing:

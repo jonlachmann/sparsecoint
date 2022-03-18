@@ -23,18 +23,18 @@ lagNames <- function (varnames, p) {
 }
 
 #' Restrict the lambda sequence: exclude all zero-solution
-restrictLambda <- function (Ymatrixsd, Xmatrix, lambda, glmnetthresh) {
-  lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = glmnetthresh)
+restrictLambda <- function (Ymatrixsd, Xmatrix, lambda, tol) {
+  lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = tol)
   restricted <- matrix(lambda[1, which(lassofit$df != 0)], nrow = 1)
   if (length(which(lassofit$df != 0)) <= 1) {
-    lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
+    lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, family = "gaussian", thresh = tol)
     restricted <- matrix(lassofit$lambda, nrow = 1)
   }
   return(restricted)
 }
 
 #' Run cross validation to determine the optimal lambda value
-crossValidate <- function (q, cutoff, Y, X, lambdas, glmnetthresh) {
+crossValidate <- function (q, cutoff, Y, X, lambdas, tol) {
   # Time series cross-validation to determine value of the tuning parameter lambda_grid
   cutoff.n <- round(cutoff * nrow(Y) / q) * q
   cvscore <- matrix(NA, ncol = ncol(lambdas), nrow = (nrow(Y) - cutoff.n) / q)
@@ -52,7 +52,7 @@ crossValidate <- function (q, cutoff, Y, X, lambdas, glmnetthresh) {
     Xtest <- X[(i+1):(i+q), ]
 
     # Estimation
-    lasso_fit <- glmnet(y = Ytrain.scaled, x = Xtrain, lambda = lambdas, standardize = F, intercept = F, family = "gaussian", thresh = glmnetthresh)
+    lasso_fit <- glmnet(y = Ytrain.scaled, x = Xtrain, lambda = lambdas, standardize = F, intercept = F, family = "gaussian", thresh = tol)
     coefs_std <- matrix(lasso_fit$beta[, which(lasso_fit$df != 0)], nrow = ncol(Xtrain)) # Coefficients on the standardized scale
     coefs_org <- coefs_std * Ytrain.sd
 

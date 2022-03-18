@@ -4,7 +4,7 @@
 \alias{restrictLambda}
 \title{Restrict the lambda sequence: exclude all zero-solution}
 \usage{
-restrictLambda(Ymatrixsd, Xmatrix, lambda, glmnetthresh)
+restrictLambda(Ymatrixsd, Xmatrix, lambda, tol)
 }
 \description{
 Restrict the lambda sequence: exclude all zero-solution

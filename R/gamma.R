@@ -8,11 +8,11 @@
 #' @param p number of lagged differences
 #' @param cutoff cutoff value time series cross-validation approach
 #' @param intercept F do not include intercept, T include intercept
-#' @param glmnetthresh tolerance parameter glmnet function
+#' @param tol tolerance parameter glmnet function
 #' @return A list containing:
 #' gamma: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, glmnetthresh = 1e-04) {
+nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04) {
   # Setting dimensions
   q <- ncol(Y)
 
@@ -37,14 +37,14 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
 
   # Lasso Estimation
   # Determine lambda sequence: exclude all zero-solution
-  lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda, glmnetthresh)
+  lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda, tol)
 
   # Rearrange X and Y to get them in time order for cross validation
   XY <- rearrangeYX(YmatrixP, XmatrixP, q)
 
-  lambda.opt <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, glmnetthresh)
+  lambda.opt <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, tol)
 
-  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
+  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = tol)
   gamma_scaled <- matrix(final_lasso$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 
@@ -70,11 +70,11 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
 #' @param p: number of lagged differences
 #' @param cutoff: cutoff value time series cross-validation approach
 #' @param intercept: F do not include intercept, T include intercept
-#' @param glmnetthresh: tolerance parameter glmnet function
+#' @param tol: tolerance parameter glmnet function
 #' @return A list containing:
 #' zbeta: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p, intercept = F, glmnetthresh = 1e-04) {
+nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p, intercept = F, tol = 1e-04) {
   # Setting dimensions
   q <- ncol(Y)
 
@@ -98,7 +98,7 @@ nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p
   XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X.matrix))) %*% X.matrix)
 
   # Lasso Estimation
-  lasso_final <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = glmnetthresh)
+  lasso_final <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = tol)
   gamma_scaled <- matrix(lasso_final$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 

@@ -19,7 +19,7 @@ rankSelectionCriterion(
   rho.glasso = 0.5,
   cutoff = 0.8,
   intercept = F,
-  glmnetthresh = 1e-04
+  tol = 1e-04
 )
 }
 \arguments{
@@ -49,7 +49,7 @@ rankSelectionCriterion(
 
 \item{cutoff}{cutoff value time series cross-validation approach}
 
-\item{glmnetthresh}{tolerance parameter glmnet function}
+\item{tol}{tolerance parameter glmnet function}
 }
 \value{
 A list containing:

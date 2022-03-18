@@ -1,23 +1,24 @@
+#' Determine Omega, conditional on alpha,beta and gamma
+#' @param Y Response Time Series
+#' @param X Time Series in Differences
+#' @param Z Time Series in Levels
+#' @param zbeta Estimate of short-run effects
+#' @param beta Estimate of cointegrating vector
+#' @param alpha Estimate of adjustment coefficients
+#' @param rho A single or multiple values for the tuning parameter rho for the glasso algorithm.
+#' @return The omega matrix as estimated with glasso, and the selected value for rho.
+nts.omega <- function (Y, X, Z, zbeta, beta, alpha, rho) {
+  # X will already have an intercept added here, so no need to specify it
+  residuals <- calcResiduals(Y, X, Z, zbeta, beta, alpha, FALSE)
 
-nts.omega <- function (Y, X, Z, zbeta, beta_sparse, alpha, intercept, rho) {
-  # Determine Omega, conditional on alpha,beta and gamma
-  if (intercept == T) {
-    Resid <- (Y - cbind(1, X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
-  } else {
-    Resid <- (Y - cbind(X) %*% zbeta) - Z %*% beta_sparse %*% t(alpha)
-  }
-
-  Resid <- Re(Resid)
-  covResid <- cov(Resid)
+  residuals <- Re(residuals)
+  cov_resid <- cov(residuals)
   if (length(rho) == 1) {
-    glasso_fit <- glassor::glassor(covResid, rho = rho, nobs=nrow(Y))
-    omega <- glasso_fit$wi
+    glasso_res <- glassor::glassor(cov_resid, rho = rho, nobs=nrow(Y))
   } else {
-    glasso_fit <- glassor::glassorpath(covResid, rho = rho, nobs=nrow(Y))
-    glasso_opt <- glassor::glassor.select(glasso_fit)
-    omega <- glasso_opt$wi
-    rho <- glasso_opt$rho
+    glasso_fit <- glassor::glassorpath(cov_resid, rho = rho, nobs=nrow(Y))
+    glasso_res <- glassor::glassor.select(glasso_fit)
   }
 
-  return(list(omega=omega, rho=rho))
+  return(list(omega=glasso_res$wi, rho=glasso_res$rho))
 }

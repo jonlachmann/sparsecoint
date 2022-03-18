@@ -16,37 +16,38 @@ SparseCointegration_Lasso(
   rho.glasso = seq(from = 1, to = 0.1, length = 5),
   lambda_beta,
   cutoff = 0.8,
-  glmnetthresh = 1e-04
+  tol = 1e-04,
+  intercept = FALSE
 )
 }
 \arguments{
-\item{p:}{number of lagged differences}
+\item{p}{number of lagged differences}
 
-\item{Y:}{Response Time Series}
+\item{r}{cointegration rank}
 
-\item{X:}{Time Series in Differences}
+\item{alpha.init}{initial value for adjustment coefficients}
 
-\item{Z:}{Time Series in Levels}
+\item{beta.init}{initial value for cointegrating vector}
 
-\item{r:}{cointegration rank}
+\item{max.iter}{maximum number of iterations}
 
-\item{alpha.init:}{initial value for adjustment coefficients}
+\item{conv}{convergence parameter}
 
-\item{beta.init:}{initial value for cointegrating vector}
+\item{lambda.gamma}{tuning paramter short-run effects}
 
-\item{max.iter:}{maximum number of iterations}
+\item{rho.glasso}{tuning parameter inverse error covariance matrix}
 
-\item{conv:}{convergence parameter}
+\item{lambda_beta}{tuning paramter cointegrating vector}
 
-\item{lambda.gamma:}{tuning paramter short-run effects}
+\item{cutoff}{cutoff value time series cross-validation approach}
 
-\item{lambda_beta:}{tuning paramter cointegrating vector}
+\item{tol}{tolerance parameter glmnet function}
 
-\item{rho.glasso:}{tuning parameter inverse error covariance matrix}
+\item{Y}{Response Time Series}
 
-\item{cutoff:}{cutoff value time series cross-validation approach}
+\item{X}{Time Series in Differences}
 
-\item{glmnetthresh:}{tolerance parameter glmnet function}
+\item{Z}{Time Series in Levels}
 }
 \value{
 A list containing:

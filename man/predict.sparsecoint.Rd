@@ -4,10 +4,10 @@
 \alias{predict.sparsecoint}
 \title{Predict using a model of class sparsecoint}
 \usage{
-\method{predict}{sparsecoint}(model, h = 1)
+\method{predict}{sparsecoint}(x, h = 1)
 }
 \arguments{
-\item{model}{The sparsecoint model object}
+\item{x}{The sparsecoint model object}
 
 \item{h}{The prediction horizon}
 }

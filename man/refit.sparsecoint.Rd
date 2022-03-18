@@ -4,7 +4,7 @@
 \alias{refit.sparsecoint}
 \title{Refit a sparsecoint model to a new set of data}
 \usage{
-refit.sparsecoint(model, data)
+refit.sparsecoint(x, data)
 }
 \description{
 Refit a sparsecoint model to a new set of data

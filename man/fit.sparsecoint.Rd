@@ -4,7 +4,7 @@
 \alias{fit.sparsecoint}
 \title{Fit a sparsecoint model to data}
 \usage{
-fit.sparsecoint(model)
+fit.sparsecoint(x)
 }
 \description{
 Fit a sparsecoint model to data

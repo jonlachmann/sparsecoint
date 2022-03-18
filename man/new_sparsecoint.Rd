@@ -4,12 +4,17 @@
 \alias{new_sparsecoint}
 \title{Create a new model object}
 \usage{
-new_sparsecoint(data, p = 1)
+new_sparsecoint(data, p = 1, intercept = FALSE)
 }
 \arguments{
 \item{data}{The data to use}
 
 \item{p}{The lag order to use}
+
+\item{intercept}{Should an intercept be included, default is FALSE}
+}
+\value{
+A new model of the class sparsecoint
 }
 \description{
 Create a new model object

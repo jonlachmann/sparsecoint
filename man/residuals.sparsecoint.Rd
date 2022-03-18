@@ -4,7 +4,7 @@
 \alias{residuals.sparsecoint}
 \title{Calculate fitted values as single step ahead forecasts}
 \usage{
-\method{fitted}{sparsecoint}(x)
+\method{residuals}{sparsecoint}(x)
 }
 \arguments{
 \item{x}{The sparsecoint model object}

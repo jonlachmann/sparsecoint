@@ -14,9 +14,10 @@ determineRank(
   beta.init,
   alpha.init,
   rho.glasso = 0.1,
-  lambda.gamma = matrix(seq(from = 0.1, to = 0.001, length = 10), nrow = 1),
-  lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1),
-  glmnetthresh = 1e-04
+  lambda.gamma,
+  lambda_beta,
+  intercept = FALSE,
+  tol = 1e-04
 )
 }
 \arguments{
@@ -38,7 +39,7 @@ determineRank(
 
 \item{lambda.gamma}{tuning parameter for GAMMA}
 
-\item{glmnetthresh}{tolerance parameter glmnet function}
+\item{tol}{tolerance parameter glmnet function}
 
 \item{Y}{Response Time Series}
 

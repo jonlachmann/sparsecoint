@@ -20,6 +20,13 @@ predict.sparsecoint <- function (x, h=1) {
 }
 
 #' Single step predictions on the diff scale
+#' @param alpha The alpha matrix
+#' @param beta The beta matrix
+#' @param gamma The gamma matrix
+#' @param level_data The level data just before the prediction
+#' @param diff_lag_data The differenced and lagged data just before the prediction
+#' @param intercept Does the model include an intercept, default is FALSE
+#' @return A single step forecast
 singlestep.sparsecoint <- function (alpha, beta, gamma, level_data, diff_lag_data, intercept=FALSE) {
   if (intercept) diff_lag_data <- c(1, diff_lag_data)
   forecast <- alpha %*% t(beta) %*% level_data + t(gamma) %*% diff_lag_data

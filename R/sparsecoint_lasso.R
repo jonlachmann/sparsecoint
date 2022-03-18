@@ -1,24 +1,24 @@
 #' Main function to perform sparse cointegration
-#' @param p: number of lagged differences
-#' @param Y: Response Time Series
-#' @param X: Time Series in Differences
-#' @param Z: Time Series in Levels
-#' @param r: cointegration rank
-#' @param alpha.init: initial value for adjustment coefficients
-#' @param beta.init: initial value for cointegrating vector
-#' @param max.iter: maximum number of iterations
-#' @param conv: convergence parameter
-#' @param lambda.gamma: tuning paramter short-run effects
-#' @param lambda_beta: tuning paramter cointegrating vector
-#' @param rho.glasso: tuning parameter inverse error covariance matrix
-#' @param cutoff: cutoff value time series cross-validation approach
-#' @param glmnetthresh: tolerance parameter glmnet function
+#' @param p number of lagged differences
+#' @param Y Response Time Series
+#' @param X Time Series in Differences
+#' @param Z Time Series in Levels
+#' @param r cointegration rank
+#' @param alpha.init initial value for adjustment coefficients
+#' @param beta.init initial value for cointegrating vector
+#' @param max.iter maximum number of iterations
+#' @param conv convergence parameter
+#' @param lambda.gamma tuning paramter short-run effects
+#' @param lambda_beta tuning paramter cointegrating vector
+#' @param rho.glasso tuning parameter inverse error covariance matrix
+#' @param cutoff cutoff value time series cross-validation approach
+#' @param tol tolerance parameter glmnet function
 #' @return A list containing:
 #' beta: estimate of cointegrating vectors
 #' alpha: estimate of adjustment coefficients
 #' gamma: estimate of short-run effects
 #' omega: estimate of inverse covariance matrix
-SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init = NULL, max.iter = 10, conv = 10^-2, lambda.gamma, rho.glasso = seq(from = 1, to = 0.1, length = 5), lambda_beta, cutoff = 0.8, glmnetthresh = 1e-04, intercept=FALSE) {
+SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init = NULL, max.iter = 10, conv = 10^-2, lambda.gamma, rho.glasso = seq(from = 1, to = 0.1, length = 5), lambda_beta, cutoff = 0.8, tol = 1e-04, intercept=FALSE) {
   Y <- data$diff
   X <- data$diff_lag
   Z <- data$level
@@ -47,11 +47,11 @@ SparseCointegration_Lasso <- function(data, p, r, alpha.init = NULL, beta.init =
 
   while ((iter < max.iter) & (diff.obj > conv)) {
     # Obtain Gamma
-    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda = lambda.gamma, intercept = intercept, glmnetthresh = glmnetthresh)
+    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda = lambda.gamma, intercept = intercept, tol = tol)
     # Obtain Alpha
     alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma_fit$gamma, r = r, Omega = Omega.init, P = gamma_fit$P, beta = beta.init, intercept = intercept)
     # Obtain Beta and Omega
-    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$gamma, rank = r, P = gamma_fit$P, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, intercept=intercept, glmnetthresh = glmnetthresh)
+    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$gamma, rank = r, P = gamma_fit$P, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, intercept=intercept, tol = tol)
 
     # Check convergence
     beta.new <- beta_fit$beta

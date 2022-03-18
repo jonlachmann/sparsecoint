@@ -4,7 +4,30 @@
 \alias{singlestep.sparsecoint}
 \title{Single step predictions on the diff scale}
 \usage{
-singlestep.sparsecoint(alpha, beta, gamma, level_data, diff_lag_data)
+singlestep.sparsecoint(
+  alpha,
+  beta,
+  gamma,
+  level_data,
+  diff_lag_data,
+  intercept = FALSE
+)
+}
+\arguments{
+\item{alpha}{The alpha matrix}
+
+\item{beta}{The beta matrix}
+
+\item{gamma}{The gamma matrix}
+
+\item{level_data}{The level data just before the prediction}
+
+\item{diff_lag_data}{The differenced and lagged data just before the prediction}
+
+\item{intercept}{Does the model include an intercept, default is FALSE}
+}
+\value{
+A single step forecast
 }
 \description{
 Single step predictions on the diff scale

@@ -10,11 +10,11 @@ nts.gamma.lassoreg(
   Z,
   Pi,
   Omega,
-  lambda.gamma = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1),
+  lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1),
   p,
   cutoff = 0.8,
   intercept = F,
-  glmnetthresh = 1e-04
+  tol = 1e-04
 )
 }
 \arguments{
@@ -28,7 +28,7 @@ nts.gamma.lassoreg(
 
 \item{Omega}{estimate of inverse error covariance matrix}
 
-\item{lambda.gamma}{tuning paramter short-run effects}
+\item{lambda}{tuning paramter short-run effects}
 
 \item{p}{number of lagged differences}
 
@@ -36,7 +36,7 @@ nts.gamma.lassoreg(
 
 \item{intercept}{F do not include intercept, T include intercept}
 
-\item{glmnetthresh}{tolerance parameter glmnet function}
+\item{tol}{tolerance parameter glmnet function}
 }
 \value{
 A list containing:

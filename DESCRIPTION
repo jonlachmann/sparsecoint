@@ -6,6 +6,7 @@ Date: 2021-12-22
 Author: Jon Lachmann
 Maintainer: Jon Lachmann <jon@lachmann.nu>
 Description: Implementing the sparse cointegration algorithm by Wilms and Croux.
+Encoding: UTF-8
 License: GPL (>= 3)
 Depends: R (>= 3.5.0),
     mvtnorm,

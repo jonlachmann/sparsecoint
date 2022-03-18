@@ -4,7 +4,7 @@
 \alias{crossValidate}
 \title{Run cross validation to determine the optimal lambda value}
 \usage{
-crossValidate(q, cutoff, Y, X, lambdas, glmnetthresh)
+crossValidate(q, cutoff, Y, X, lambdas, tol)
 }
 \description{
 Run cross validation to determine the optimal lambda value

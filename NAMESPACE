@@ -2,6 +2,7 @@
 
 S3method(fitted,sparsecoint)
 S3method(predict,sparsecoint)
+S3method(residuals,sparsecoint)
 S3method(summary,sparsecoint)
 export(refit.sparsecoint)
 export(sparsecoint)
