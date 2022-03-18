@@ -18,22 +18,18 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
 
   # Creating data matrices
   Y.matrix <- Y - Z %*% t(Pi)
-  if (intercept == T) {
-    X.matrix <- cbind(1, X)
-  } else {
-    X.matrix <- cbind(X)
-  }
+  if (intercept) X <- cbind(1, X)
 
   # Compute transformation matrix P
   decomp <- eigen(Omega)
   P <- (decomp$vectors) %*% diag(sqrt(decomp$values)) %*% solve(decomp$vectors)
 
   # Final estimate
-  Pfinal <- kronecker(P, diag(rep(1, nrow(X.matrix))))
+  Pfinal <- kronecker(P, diag(rep(1, nrow(X))))
   YmatrixP <- Pfinal %*% as.numeric(Y.matrix)
   YmatrixP.sd <- sd(Y.matrix)
   YmatrixP.scaled <- YmatrixP / YmatrixP.sd
-  XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X.matrix))) %*% X.matrix)
+  XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X))) %*% X)
 
   # Lasso Estimation
   # Determine lambda sequence: exclude all zero-solution
@@ -48,7 +44,7 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
   gamma_scaled <- matrix(final_lasso$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 
-  gamma <- matrix(NA, ncol = q, nrow = ncol(X.matrix))
+  gamma <- matrix(NA, ncol = q, nrow = ncol(X))
   for (i.q in 1:q) {
     if (intercept == T) {
       gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
@@ -80,29 +76,25 @@ nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p
 
   # Creating data matrices
   Y.matrix <- Y - Z %*% t(Pi)
-  if (intercept == T) {
-    X.matrix <- cbind(1, X)
-  } else {
-    X.matrix <- cbind(X)
-  }
+  if (intercept) X <- cbind(1, X)
 
   # Compute transformation matrix P
   decomp <- eigen(Omega)
   P <- (decomp$vectors) %*% diag(sqrt(decomp$values)) %*% solve(decomp$vectors)
 
   # Final estimate
-  Pfinal <- kronecker(P, diag(rep(1, nrow(X.matrix))))
+  Pfinal <- kronecker(P, diag(rep(1, nrow(X))))
   YmatrixP <- Pfinal %*% as.numeric(Y.matrix)
   YmatrixP.sd <- sd(Y.matrix)
   YmatrixP.scaled <- YmatrixP / YmatrixP.sd
-  XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X.matrix))) %*% X.matrix)
+  XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X))) %*% X)
 
   # Lasso Estimation
   lasso_final <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = tol)
   gamma_scaled <- matrix(lasso_final$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 
-  zbeta <- matrix(NA, ncol = q, nrow = ncol(X.matrix))
+  zbeta <- matrix(NA, ncol = q, nrow = ncol(X))
   for (i.q in 1:q)
   {
     if (intercept == T) {

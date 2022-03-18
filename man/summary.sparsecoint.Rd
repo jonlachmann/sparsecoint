@@ -4,10 +4,10 @@
 \alias{summary.sparsecoint}
 \title{Summary function for sparsecoint models}
 \usage{
-\method{summary}{sparsecoint}(model)
+\method{summary}{sparsecoint}(x)
 }
 \arguments{
-\item{model}{The model object}
+\item{x}{The sparsecoint model object}
 }
 \value{
 A summary of the model

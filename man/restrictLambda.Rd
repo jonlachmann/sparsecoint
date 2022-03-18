@@ -2,10 +2,10 @@
 % Please edit documentation in R/helpers.R
 \name{restrictLambda}
 \alias{restrictLambda}
-\title{Restrict the lambda sequence: exclude all zero-solution}
+\title{Restrict the lambda sequence: exclude all-zero solutions}
 \usage{
 restrictLambda(Ymatrixsd, Xmatrix, lambda, tol)
 }
 \description{
-Restrict the lambda sequence: exclude all zero-solution
+Restrict the lambda sequence: exclude all-zero solutions
 }

@@ -9,8 +9,9 @@ sparsecoint <- function (data, p=1, intercept=FALSE) {
 #' Fit a sparsecoint model to data
 fit.sparsecoint <- function (x) {
   # Set up lambda grids for gamma and beta
-  lambda_gamma <- matrix(seq(from = 1,to = 0.001,length = 20), nrow = 1)
-  lambda_beta <- matrix(seq(from = 1,to = 0.001,length = 20), nrow = 1)
+  lambda_gamma <- matrix(seq(from = 1, to = 0.001, length = 20), nrow = 1)
+  lambda_beta <- matrix(seq(from = 1, to = 0.001, length = 20), nrow = 1)
+  rho_omega <- seq(from = 1, to = 0.1, length = 5)
 
   rank <- determineRank(x$data, beta.init = NULL, alpha.init = NULL, p = x$p, lambda.gamma = lambda_gamma, lambda_beta = lambda_beta, intercept=x$intercept)
   if (rank$rhat == 0) {
@@ -18,7 +19,7 @@ fit.sparsecoint <- function (x) {
     return(x)
   }
 
-  model_fit <- SparseCointegration_Lasso(x$data, x$p, r = rank$rhat, lambda.gamma = lambda_gamma, lambda_beta = lambda_beta, intercept=x$intercept)
+  model_fit <- SparseCointegration_Lasso(x$data, x$p, r = rank$rhat, lambda_gamma = lambda_gamma, lambda_beta = lambda_beta, rho_omega=rho_omega, intercept=x$intercept)
   x$iter <- model_fit$iter
   x$alpha <- model_fit$alpha
   x$beta <- model_fit$beta
@@ -38,7 +39,7 @@ fit.sparsecoint <- function (x) {
 #'
 #' @export
 refit.sparsecoint <- function (x, data) {
-  x$data <- setupData(data, x$p)
+  x$data <- setupData(data, NULL, x$p)
   x$fitted <- fitted.sparsecoint(x)
   x$residuals <- tail(x$data$level, nrow(x$fitted)) - x$fitted
   return(x)
@@ -50,7 +51,7 @@ refit.sparsecoint <- function (x, data) {
 #' @param intercept Should an intercept be included, default is FALSE
 #' @return A new model of the class sparsecoint
 new_sparsecoint <- function (data, p=1, intercept=FALSE) {
-  data <- setupData(data, p)
+  data <- setupData(data, NULL, p)
   structure(list(data=data, p=p, intercept=intercept),
             class="sparsecoint")
 }

@@ -57,7 +57,7 @@ determineRank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lasso
       }
 
       # Sparse cointegration fit
-      lasso_fit <- rankSelectionCriterion(Y = Y, X = X, Z = Z, beta.init = beta.init.fit, alpha.init = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, intercept=intercept, tol = tol)
+      lasso_fit <- rankSelectionCriterion(Y = Y, X = X, Z = Z, Beta = beta.init.fit, alpha = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, intercept=intercept, tol = tol)
 
       # Response and predictors in penalized reduced rank regression
       khat <- calculateKhat(Y, X, Z, lasso_fit$zbeta, intercept)
@@ -95,8 +95,8 @@ calculateKhat <- function (Y, X, Z, zbeta, intercept) {
 #' @param X Time Series in Differences
 #' @param Z Time Series in Levels
 #' @param r cointegration rank
-#' @param alpha.init initial value for adjustment coefficients
-#' @param beta.init initial value for cointegrating vector
+#' @param alpha initial value for adjustment coefficients
+#' @param Beta initial value for cointegrating vector
 #' @param max.iter maximum number of iterations
 #' @param conv convergence parameter
 #' @param lambda.gamma tuning paramter short-run effects
@@ -109,37 +109,44 @@ calculateKhat <- function (Y, X, Z, zbeta, intercept) {
 #' ALPHAhat: estimate of adjustment coefficients
 #' ZBETA: estimate of short-run effects
 #' OMEGA: estimate of inverse covariance matrix
-rankSelectionCriterion <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init, max.iter = 25, conv = 10^-3, lambda.gamma = 0.001, lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), rho.glasso = 0.5, cutoff = 0.8, intercept = F, tol = 1e-04) {
+rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter = 25, conv = 10^-3, lambda.gamma = 0.001, lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), rho.glasso = 0.5, cutoff = 0.8, intercept = F, tol = 1e-04) {
   # Dimensions
   q <- dim(Y)[2]
   n <- dim(Y)[1]
 
   # Starting value
-  if (is.null(alpha.init)) {
-    alpha.init <- matrix(rnorm(q * r), ncol = r, nrow = q)
-    beta.init <- matrix(rnorm(q * r), ncol = r, nrow = q)
-    Pi.init <- alpha.init %*% t(beta.init)
+  if (is.null(alpha)) {
+    alpha <- matrix(rnorm(q * r), ncol = r, nrow = q)
+    Beta <- matrix(rnorm(q * r), ncol = r, nrow = q)
+    Pi <- alpha %*% t(Beta)
   } else {
-    Pi.init <- alpha.init %*% t(beta.init)
+    Pi <- alpha %*% t(Beta)
   }
 
   # Convergence parameters: initialization
   iter <- 1
   diff.obj <- 10 * conv
-  Omega.init <- diag(1, q)
+  Omega <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  residuals <- calcResiduals(Y, X, Z, p, beta.init, alpha.init, intercept)
-  value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega.init %*% t(residuals))) - log(det(Omega.init))
+  residuals <- calcResiduals(Y, X, Z, p, Beta, alpha, intercept)
+  value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega %*% t(residuals))) - log(det(Omega))
 
 
   while ((iter < max.iter) & (diff.obj > conv)) {
 
     # Obtain Gamma, fixed value of tuning parameter
-    gamma_fit <- nts.gamma.fixed.lassoreg(Y = Y, X = X, Z = Z, Pi = Pi.init, p = p, Omega = Omega.init, lambda.gamma = lambda.gamma, intercept=intercept, tol = tol)
+    gamma_fit <- nts.gamma.fixed.lassoreg(Y = Y, X = X, Z = Z,
+                                          Pi = Pi, Omega = Omega,
+                                          p = p, lambda.gamma = lambda.gamma, intercept=intercept, tol = tol)
     # Obtain alpha
-    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, r = r, Omega = Omega.init, P = gamma_fit$P, intercept=intercept, beta = beta.init)
-    # abtain beta and omega
-    beta_fit <- nts.beta(Y = Y, X = X, Z = Z, zbeta = gamma_fit$zbeta, rank = r, P = gamma_fit$P, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star, lambda_grid = lambda_beta, rho.glasso = rho.glasso, cutoff = cutoff, intercept=intercept, tol = tol)
+    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
+                                      zbeta = gamma_fit$zbeta, Omega = Omega,
+                                      r = r, P = gamma_fit$P, intercept=intercept, beta = Beta)
+    # Obtain beta and omega
+    beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
+                         zbeta = gamma_fit$zbeta, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
+                         lambda_grid = lambda_beta, rho_omega = rho.glasso,
+                         rank = r, P = gamma_fit$P, cutoff = cutoff, intercept=intercept, tol = tol)
 
 
     # Check convergence
@@ -149,10 +156,10 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init, 
     value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
 
-    alpha.init <- alpha_fit$alpha
-    beta.init <- beta.new
-    Pi.init <- alpha.init %*% t(beta.new) ###### Pi.init!!!
-    Omega.init <- beta_fit$omega
+    alpha <- alpha_fit$alpha
+    Beta <- beta.new
+    Pi <- alpha %*% t(beta.new) ###### Pi.init!!!
+    Omega <- beta_fit$omega
     iter <- iter + 1
   }
 

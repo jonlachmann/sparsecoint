@@ -11,14 +11,14 @@
 #' @param alpha estimate of adjustment coefficients
 #' @param alphastar estimate of transformed adjustment coefficients
 #' @param lambda_grid tuning paramter cointegrating vector
-#' @param rho.glasso tuning parameter inverse error covariance matrix
+#' @param rho_omega tuning parameter inverse error covariance matrix
 #' @param cutoff cutoff value time series cross-validation approach
 #' @param intercept F do not include intercept, T include intercept in estimation short-run effects
 #' @param tol tolerance parameter glmnet function
 #' @return A list containing:
 #' BETA: estimate of cointegrating vectors
 #' OMEGA: estimate of inverse covariance matrix
-nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = NULL, rho.glasso, cutoff, intercept = F, tol = 1e-04) {
+nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = NULL, rho_omega, cutoff, intercept = F, tol = 1e-04) {
   if (is.null(lambda_grid)) lambda_grid <- matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1)
 
   # Data matrices
@@ -44,7 +44,7 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = NU
   }
 
   # Determine Omega, conditional on alpha,beta and gamma
-  omega_res <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, rho.glasso)
+  omega_res <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, rho_omega)
 
   out <- list(beta=beta_sparse, omega=omega_res$omega, rho=omega_res$rho, lambda=lambda_opt)
 }
