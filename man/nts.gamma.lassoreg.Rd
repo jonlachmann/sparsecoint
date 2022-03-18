@@ -2,7 +2,7 @@
 % Please edit documentation in R/gamma.R
 \name{nts.gamma.lassoreg}
 \alias{nts.gamma.lassoreg}
-\title{FUNCTIONS TO ESTIMATE GAMMA, using L1 PENALTY ###}
+\title{Function to estimate gamma, using l1 penalty ###}
 \usage{
 nts.gamma.lassoreg(
   Y,
@@ -20,23 +20,23 @@ nts.gamma.lassoreg(
 \arguments{
 \item{Y}{Response Time Series}
 
-\item{X:}{Time Series in Differences}
+\item{X}{Time Series in Differences}
 
-\item{Z:}{Time Series in Levels}
+\item{Z}{Time Series in Levels}
 
-\item{Pi:}{estimate of cointegration space}
+\item{Pi}{estimate of cointegration space}
 
-\item{Omega:}{estimate of inverse error covariance matrix}
+\item{Omega}{estimate of inverse error covariance matrix}
 
-\item{lambda.gamma:}{tuning paramter short-run effects}
+\item{lambda.gamma}{tuning paramter short-run effects}
 
-\item{p:}{number of lagged differences}
+\item{p}{number of lagged differences}
 
-\item{cutoff:}{cutoff value time series cross-validation approach}
+\item{cutoff}{cutoff value time series cross-validation approach}
 
-\item{intercept:}{F do not include intercept, T include intercept}
+\item{intercept}{F do not include intercept, T include intercept}
 
-\item{glmnetthresh:}{tolerance parameter glmnet function}
+\item{glmnetthresh}{tolerance parameter glmnet function}
 }
 \value{
 A list containing:
@@ -44,5 +44,5 @@ gamma: estimate of short-run effects
 P: transformation matrix P derived from Omega
 }
 \description{
-FUNCTIONS TO ESTIMATE GAMMA, using L1 PENALTY ###
+Function to estimate gamma, using l1 penalty ###
 }

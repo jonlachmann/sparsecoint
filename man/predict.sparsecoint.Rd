@@ -2,10 +2,18 @@
 % Please edit documentation in R/predict.R
 \name{predict.sparsecoint}
 \alias{predict.sparsecoint}
-\title{Predict}
+\title{Predict using a model of class sparsecoint}
 \usage{
 \method{predict}{sparsecoint}(model, h = 1)
 }
+\arguments{
+\item{model}{The sparsecoint model object}
+
+\item{h}{The prediction horizon}
+}
+\value{
+A prediction of length h
+}
 \description{
-Predict
+Predict using a model of class sparsecoint
 }

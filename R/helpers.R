@@ -14,14 +14,6 @@ normalisationUnit <- function(U) {
   Uunit <- U / length.U
 }
 
-availableLambda <- function (U) {
-  if (all(is.na(U) == T)) {
-    return(F)
-  } else {
-    return(T)
-  }
-}
-
 lagNames <- function (varnames, p) {
   lagnames <- character()
   for (i in seq_len(p)) {
@@ -86,11 +78,9 @@ rearrangeYX <- function (Y, X, q) {
   return(list(Y=Y[idx,, drop=FALSE], X=X[idx,, drop=FALSE]))
 }
 
-calcResiduals <- function (Y, X, Z, zbeta, beta, alpha, intercept=T) {
-  if (!intercept) {
-    residuals <- Y - X %*% zbeta[-1, ] - Z %*% beta %*% t(alpha)
-  } else {
-    residuals <- Y - X %*% zbeta - Z %*% beta %*% t(alpha)
-  }
+
+calcResiduals <- function (Y, X, Z, zbeta, beta, alpha, intercept=FALSE) {
+  if (intercept) X <- cbind(1, X)
+  residuals <- Y - X %*% zbeta - Z %*% beta %*% t(alpha)
   return(residuals)
 }

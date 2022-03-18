@@ -1,18 +1,18 @@
-#' FUNCTIONS TO ESTIMATE GAMMA, using L1 PENALTY ###
+#' Function to estimate gamma, using l1 penalty ###
 #' @param Y Response Time Series
-#' @param X: Time Series in Differences
-#' @param Z: Time Series in Levels
-#' @param Pi: estimate of cointegration space
-#' @param Omega: estimate of inverse error covariance matrix
-#' @param lambda.gamma: tuning paramter short-run effects
-#' @param p: number of lagged differences
-#' @param cutoff: cutoff value time series cross-validation approach
-#' @param intercept: F do not include intercept, T include intercept
-#' @param glmnetthresh: tolerance parameter glmnet function
+#' @param X Time Series in Differences
+#' @param Z Time Series in Levels
+#' @param Pi estimate of cointegration space
+#' @param Omega estimate of inverse error covariance matrix
+#' @param lambda tuning paramter short-run effects
+#' @param p number of lagged differences
+#' @param cutoff cutoff value time series cross-validation approach
+#' @param intercept F do not include intercept, T include intercept
+#' @param glmnetthresh tolerance parameter glmnet function
 #' @return A list containing:
 #' gamma: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, glmnetthresh = 1e-04) {
+nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, glmnetthresh = 1e-04) {
   # Setting dimensions
   q <- ncol(Y)
 
@@ -37,24 +37,23 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = matrix(seq(fro
 
   # Lasso Estimation
   # Determine lambda sequence: exclude all zero-solution
-  lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda.gamma, glmnetthresh)
+  lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda, glmnetthresh)
 
   # Rearrange X and Y to get them in time order for cross validation
   XY <- rearrangeYX(YmatrixP, XmatrixP, q)
 
   lambda.opt <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, glmnetthresh)
 
-  LASSOfinal <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
-  GAMMAscaled <- matrix(LASSOfinal$beta, ncol = 1)
-  GAMMA.Sparse <- GAMMAscaled * YmatrixP.sd
+  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = glmnetthresh)
+  gamma_scaled <- matrix(final_lasso$beta, ncol = 1)
+  gamma_sparse <- gamma_scaled * YmatrixP.sd
 
   gamma <- matrix(NA, ncol = q, nrow = ncol(X.matrix))
-  for (i.q in 1:q)
-  {
+  for (i.q in 1:q) {
     if (intercept == T) {
-      gamma[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
+      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
     } else {
-      gamma[, i.q] <- GAMMA.Sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
+      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
     }
   }
 
@@ -114,10 +113,4 @@ nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p
   }
 
   out <- list(zbeta = zbeta, P = P)
-}
-
-formatSparseData <- function (Y, X, P) {
-  Pfinal <- kronecker(P, diag(nrow(X)))
-  YmatrixP <- Pfinal %*% Y
-  YmatrixP.sd <- sd(Y)
 }
