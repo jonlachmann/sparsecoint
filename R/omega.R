@@ -2,9 +2,9 @@
 #' @param Y Response Time Series
 #' @param X Time Series in Differences
 #' @param Z Time Series in Levels
-#' @param zbeta Estimate of short-run effects
-#' @param beta Estimate of cointegrating vector
-#' @param alpha Estimate of adjustment coefficients
+#' @param zbeta Estimate of the short-run effects
+#' @param beta Estimate of the cointegrating vector
+#' @param alpha Estimate of the adjustment coefficients
 #' @param rho A single or multiple values for the tuning parameter rho for the glasso algorithm.
 #' @return The omega matrix as estimated with glasso, and the selected value for rho.
 nts.omega <- function (Y, X, Z, zbeta, beta, alpha, rho) {

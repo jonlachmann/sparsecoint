@@ -83,27 +83,30 @@ residuals.sparsecoint <- function (x) {
 }
 
 #' Summary function for sparsecoint models
-#' @param model The model object
+#' @param x The sparsecoint model object
 #' @return A summary of the model
 #' @method summary sparsecoint
 #' @export
-summary.sparsecoint <- function (model) {
-  variables <- colnames(model$data$level)
+summary.sparsecoint <- function (x) {
+  variables <- colnames(x$data$level)
   for (var in variables) {
     cat(var, "residuals:\n")
-    print(summary(model$residuals[,var]))
+    print(summary(x$residuals[, var]))
     cat("\n")
   }
-  cat("\nCointegration rank:", model$rank, "\n")
-  cat("Short run coefficients:\n")
-  colnames(model$gamma) <- colnames(model$data$level)
-  rownames(model$gamma) <- lagNames(colnames(model$data$level), model$p - 1)
-  print(t(model$gamma))
-  cat("Gamma lambda:", model$gamma.lambda, "\n")
+  cat("\nCointegration rank:", x$rank, "\n")
+  cat("Short run coefficients (gamma):\n")
+  colnames(x$gamma) <- colnames(x$data$level)
+  rownames(x$gamma) <- lagNames(colnames(x$data$level), x$p - 1, x$intercept)
+  print(t(x$gamma))
+  cat("Gamma lambda:", x$gamma.lambda, "\n")
   cat("\nLong run coefficients\n")
   cat("Alpha:\n")
-  print(model$alpha)
-  cat("Beta:\n")
-  print(model$beta)
-  cat("Beta lambda:", model$beta.lambda, "\n")
+  print(x$alpha)
+  cat("\nBeta:\n")
+  print(x$beta)
+  cat("Beta lambda:", x$beta.lambda, "\n")
+  cat("\nEstimated inverse error covariance matrix (omega):\n")
+  print(x$omega)
+  cat("Omega rho:", x$omega.rho, "\n")
 }

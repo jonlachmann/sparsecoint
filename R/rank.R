@@ -128,9 +128,7 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha.init = NULL, beta.init, 
   diff.obj <- 10 * conv
   Omega.init <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  zbeta.init <- matrix(rep(diag(1, q), p - 1), ncol = q, byrow = T)
-  if (intercept) zbeta.init <- rbind(0, zbeta.init)
-  residuals <- calcResiduals(Y, X, Z, zbeta.init, beta.init, alpha.init, intercept)
+  residuals <- calcResiduals(Y, X, Z, p, beta.init, alpha.init, intercept)
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega.init %*% t(residuals))) - log(det(Omega.init))
 
 

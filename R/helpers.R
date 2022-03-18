@@ -14,15 +14,16 @@ normalisationUnit <- function(U) {
   Uunit <- U / length.U
 }
 
-lagNames <- function (varnames, p) {
-  lagnames <- character()
+lagNames <- function (varnames, p, intercept=FALSE) {
+  if (intercept) lagnames <- "Intercept"
+  else lagnames <- character()
   for (i in seq_len(p)) {
     lagnames <- c(lagnames, paste0(varnames, ".", i))
   }
   return(lagnames)
 }
 
-#' Restrict the lambda sequence: exclude all zero-solution
+#' Restrict the lambda sequence: exclude all-zero solutions
 restrictLambda <- function (Ymatrixsd, Xmatrix, lambda, tol) {
   lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = tol)
   restricted <- matrix(lambda[1, which(lassofit$df != 0)], nrow = 1)
@@ -79,7 +80,22 @@ rearrangeYX <- function (Y, X, q) {
 }
 
 
+#' Calculate the residuals
+#' @param Y Response Time Series
+#' @param X Time Series in Differences
+#' @param Z Time Series in Levels
+#' @param zbeta Estimate of short-run effects, or an integer specifying the number of lags to initialise it here.
+#' @param beta Estimate of the cointegrating vector
+#' @param alpha Estimate of the adjustment coefficients
+#' @param intercept Should an intercept be added to the data, default is FALSE
+#' @return The residuals
 calcResiduals <- function (Y, X, Z, zbeta, beta, alpha, intercept=FALSE) {
+  # Initialise zbeta if it is not provided
+  if (!is.matrix(zbeta)) {
+    zbeta <- matrix(rep(diag(1, ncol(Y)), zbeta - 1), ncol = ncol(Y), byrow = T)
+    if (intercept) zbeta <- rbind(0, zbeta)
+  }
+
   if (intercept) X <- cbind(1, X)
   residuals <- Y - X %*% zbeta - Z %*% beta %*% t(alpha)
   return(residuals)

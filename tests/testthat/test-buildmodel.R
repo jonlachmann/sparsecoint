@@ -1,12 +1,12 @@
 
-test_that("The model is able to create a basic model", {
+test_that("The package is able to create a basic model and make som predictions", {
   set.seed(123)
   data <- matrix(rnorm(300) + 1:300, 100)
   colnames(data) <- c("Y1", "Y2", "Y3")
 
-  model3 <- sparsecoint(data, 12, TRUE)
+  model <- sparsecoint(data, 12, TRUE)
 
-  predict(model3, 12)
+  predict(model, 12)
 
   summary(model)
 
