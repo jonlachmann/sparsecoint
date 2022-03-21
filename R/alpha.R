@@ -3,7 +3,7 @@
 #' @param X Time Series in Differences
 #' @param Z Time Series in Levels
 #' @param zbeta estimate of short-run effects
-#' @param r cointegration rank
+#' @param rank cointegration rank
 #' @param Omega estimate of inverse error covariance matrix
 #' @param P transformation matrix P derived from Omega
 #' @param beta estimate of cointegrating vector
@@ -11,7 +11,7 @@
 #' @return A list containing:
 #' alpha: estimate of adjustment coefficients
 #' alphastar: estimate of transformed adjustment coefficients
-nts.alpha.procrusted <- function(Y, X, Z, zbeta, r, Omega, P, beta, intercept = F) {
+nts.alpha.procrusted <- function(Y, X, Z, zbeta, rank, Omega, P, beta, intercept = F) {
   # Data matrices
   if (intercept) X <- cbind(1, X)
   Ymatrix <- Y - X %*% zbeta
@@ -23,7 +23,7 @@ nts.alpha.procrusted <- function(Y, X, Z, zbeta, r, Omega, P, beta, intercept = 
   # Singular Value Decomposition to compute ALPHA
   SingDecomp <- svd(t(Xmatrix) %*% Ymatrix %*% P)
   alpha_star <- t(SingDecomp$u %*% t(SingDecomp$v))
-  if (r == 1) {
+  if (rank == 1) {
     alpha_star <- matrix(alpha_star, ncol = 1)
   }
   alpha <- Pmin %*% alpha_star

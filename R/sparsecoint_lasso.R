@@ -32,50 +32,51 @@ SparseCointegration_Lasso <- function(data, p, r, alpha = NULL, beta = NULL, max
 
   beta <- init$beta
   alpha <- init$alpha
-  Pi <- init$Pi
 
   # Convergence parameters: initialization
   iter <- 1
   diff.obj <- 10 * conv
-  omega <- diag(1, q)
+  Omega <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
   residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept)
-  value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% omega %*% t(residuals))) - log(det(omega))
+  value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega %*% t(residuals))) - log(det(Omega))
 
 
   while ((iter < max.iter) & (diff.obj > conv)) {
-    # Obtain Gamma
-    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
-                                    Pi = Pi, Omega = omega,
-                                    p = p, lambda = lambda_gamma, intercept = intercept, tol = tol)
-    # Obtain Alpha
-    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
-                                      zbeta = gamma_fit$gamma, Omega = omega,
-                                      r = r, P = gamma_fit$P, beta = beta, intercept = intercept)
-    # Obtain Beta and Omega
-    beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
-                         zbeta = gamma_fit$gamma, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
-                         rank = r, P = gamma_fit$P,lambda_grid = lambda_beta, rho_omega = rho_omega, cutoff = cutoff, intercept=intercept, tol = tol)
+    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, tol)
 
     # Check convergence
-    residuals <- calcResiduals(Y, X, Z, gamma_fit$gamma, beta_fit$beta, alpha_fit$alpha, intercept)
-    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
+    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept)
+    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% fit$omega %*% t(residuals))) - log(det(fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
-    alpha <- alpha_fit$alpha
-    beta <- beta_fit$beta
-    Pi <- alpha %*% t(beta)
-    omega <- beta_fit$omega
+    alpha <- fit$alpha
+    beta <- fit$beta
+    Omega <- fit$omega
     iter <- iter + 1
   }
 
-  out <- list(beta = beta_fit$beta,
-              alpha = alpha_fit$alpha,
-              iter = iter,
-              gamma = gamma_fit$gamma,
-              omega = beta_fit$omega,
-              beta.lambda=beta_fit$lambda,
-              gamma.lambda=gamma_fit$lambda,
-              omega.rho=beta_fit$rho)
+  fit$iter <- iter
+
+  return(fit)
+}
+
+sparseCointegrationFit <- function (Y, Z, X, alpha, omega, beta, p, rank, lambda_gamma, lambda_beta, omega_rho, cutoff, intercept, tol, fixed=FALSE) {
+  # Obtain Gamma
+  gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
+                                  alpha = alpha, beta = beta, Omega = omega,
+                                  p = p, lambda = lambda_gamma, intercept = intercept, tol = tol, fixed=fixed)
+  # Obtain Alpha
+  alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
+                                    zbeta = gamma_fit$gamma, Omega = omega,
+                                    rank = rank, P = gamma_fit$P, beta = beta, intercept = intercept)
+  # Obtain Beta and Omega
+  beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
+                       gamma = gamma_fit$gamma, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
+                       lambda = lambda_beta, rho_omega = omega_rho,
+                       rank = rank, P = gamma_fit$P, cutoff = cutoff, intercept=intercept, tol = tol)
+
+  return(list(gamma=gamma_fit$gamma, alpha=alpha_fit$alpha, beta=beta_fit$beta, omega=beta_fit$omega,
+              gamma_lambda=gamma_fit$lambda, beta_lambda=beta_fit$lambda, omega_rho=beta_fit$rho))
 }
 
 sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.init=NULL) {
@@ -88,8 +89,7 @@ sparseCointegrationInit <- function (Y, X, Z, rank, p, q, alpha.init=NULL, beta.
     }
     beta.init <- initBetaFinal(Y, Z, X, alpha.init, p, q, rank)
   }
-  Pi.init <- alpha.init %*% t(beta.init)
-  return(list(Pi=Pi.init, alpha=alpha.init, beta=beta.init))
+  return(list(alpha=alpha.init, beta=beta.init))
 }
 
 

@@ -4,36 +4,6 @@ CVscore.Reg <- function(U, X.data, Y.data, Y.sd) {
   return(mean((Y.data - X.data %*% U)^2 / Y.sd))
 }
 
-normalisationUnit <- function(U) {
-  # AUXILIARY FUNCTION
-  # output: normalized vector U
-  length.U <- as.numeric(sqrt(t(U) %*% U))
-  if (length.U == 0) {
-    length.U <- 1
-  }
-  Uunit <- U / length.U
-}
-
-lagNames <- function (varnames, p, intercept=FALSE) {
-  if (intercept) lagnames <- "Intercept"
-  else lagnames <- character()
-  for (i in seq_len(p)) {
-    lagnames <- c(lagnames, paste0(varnames, ".", i))
-  }
-  return(lagnames)
-}
-
-#' Restrict the lambda sequence: exclude all-zero solutions
-restrictLambda <- function (Ymatrixsd, Xmatrix, lambda, tol) {
-  lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = tol)
-  restricted <- matrix(lambda[1, which(lassofit$df != 0)], nrow = 1)
-  if (length(which(lassofit$df != 0)) <= 1) {
-    lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, family = "gaussian", thresh = tol)
-    restricted <- matrix(lassofit$lambda, nrow = 1)
-  }
-  return(restricted)
-}
-
 #' Run cross validation to determine the optimal lambda value
 crossValidate <- function (q, cutoff, Y, X, lambdas, tol) {
   # Time series cross-validation to determine value of the tuning parameter lambda_grid
@@ -71,6 +41,11 @@ crossValidate <- function (q, cutoff, Y, X, lambdas, tol) {
   return(lambda.opt)
 }
 
+#' Rearrange X and Y to be in the appropriate order for cross validatuon
+#' @param Y The dependent variable
+#' @param X The independent lags
+#' @param q The number of dependent variables
+#' @return The Y and X matrices rearranged to be in time order
 rearrangeYX <- function (Y, X, q) {
   n <- nrow(X) / q
   # Generate a vector of indices for the new order of the data.
@@ -79,24 +54,13 @@ rearrangeYX <- function (Y, X, q) {
   return(list(Y=Y[idx,, drop=FALSE], X=X[idx,, drop=FALSE]))
 }
 
-
-#' Calculate the residuals
-#' @param Y Response Time Series
-#' @param X Time Series in Differences
-#' @param Z Time Series in Levels
-#' @param zbeta Estimate of short-run effects, or an integer specifying the number of lags to initialise it here.
-#' @param beta Estimate of the cointegrating vector
-#' @param alpha Estimate of the adjustment coefficients
-#' @param intercept Should an intercept be added to the data, default is FALSE
-#' @return The residuals
-calcResiduals <- function (Y, X, Z, zbeta, beta, alpha, intercept=FALSE) {
-  # Initialise zbeta if it is not provided
-  if (!is.matrix(zbeta)) {
-    zbeta <- matrix(rep(diag(1, ncol(Y)), zbeta - 1), ncol = ncol(Y), byrow = T)
-    if (intercept) zbeta <- rbind(0, zbeta)
+#' Restrict the lambda sequence: exclude all-zero solutions
+restrictLambda <- function (Ymatrixsd, Xmatrix, lambda, tol) {
+  lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = tol)
+  restricted <- matrix(lambda[1, which(lassofit$df != 0)], nrow = 1)
+  if (length(which(lassofit$df != 0)) <= 1) {
+    lassofit <- glmnet(y = Ymatrixsd, x = Xmatrix, standardize = F, intercept = F, family = "gaussian", thresh = tol)
+    restricted <- matrix(lassofit$lambda, nrow = 1)
   }
-
-  if (intercept) X <- cbind(1, X)
-  residuals <- Y - X %*% zbeta - Z %*% beta %*% t(alpha)
-  return(residuals)
+  return(restricted)
 }

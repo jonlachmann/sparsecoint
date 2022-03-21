@@ -10,12 +10,12 @@ nts.beta(
   Y,
   X,
   Z,
-  zbeta,
+  gamma,
   rank,
   P,
   alpha,
   alphastar,
-  lambda_grid = NULL,
+  lambda = NULL,
   rho_omega,
   cutoff,
   intercept = F,
@@ -29,7 +29,7 @@ nts.beta(
 
 \item{Z}{Time Series in Levels}
 
-\item{zbeta}{estimate of short-run effects}
+\item{gamma}{estimate of short-run effects}
 
 \item{rank}{cointegration rank}
 
@@ -39,7 +39,7 @@ nts.beta(
 
 \item{alphastar}{estimate of transformed adjustment coefficients}
 
-\item{lambda_grid}{tuning paramter cointegrating vector}
+\item{lambda}{tuning paramter cointegrating vector}
 
 \item{rho_omega}{tuning parameter inverse error covariance matrix}
 

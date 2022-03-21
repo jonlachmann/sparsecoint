@@ -2,7 +2,8 @@
 #' @param Y Response Time Series
 #' @param X Time Series in Differences
 #' @param Z Time Series in Levels
-#' @param Pi estimate of cointegration space
+#' @param alpha Estimate of the adjustment coefficients
+#' @param beta Estimate of the cointegrating vector
 #' @param Omega estimate of inverse error covariance matrix
 #' @param lambda tuning paramter short-run effects
 #' @param p number of lagged differences
@@ -12,12 +13,12 @@
 #' @return A list containing:
 #' gamma: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04, fixed=FALSE) {
+nts.gamma.lassoreg <- function(Y, X, Z, alpha, beta, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04, fixed=FALSE) {
   # Setting dimensions
   q <- ncol(Y)
 
   # Creating data matrices
-  Y.matrix <- Y - Z %*% t(Pi)
+  Y.matrix <- Y - Z %*% t(alpha %*% t(beta))
   if (intercept) X <- cbind(1, X)
 
   # Compute transformation matrix P

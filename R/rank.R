@@ -57,10 +57,10 @@ determineRank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lasso
       }
 
       # Sparse cointegration fit
-      lasso_fit <- rankSelectionCriterion(Y = Y, X = X, Z = Z, Beta = beta.init.fit, alpha = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda.gamma = lambda.gamma, lambda_beta = lambda_beta, rho.glasso = rho.glasso, intercept=intercept, tol = tol)
+      lasso_fit <- rankSelectionCriterion(Y = Y, X = X, Z = Z, beta = beta.init.fit, alpha = alpha.init.fit, p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso, lambda_gamma = lambda.gamma, lambda_beta = lambda_beta, rho_omega = rho.glasso, intercept=intercept, tol = tol)
 
       # Response and predictors in penalized reduced rank regression
-      khat <- calculateKhat(Y, X, Z, lasso_fit$zbeta, intercept)
+      khat <- calculateKhat(Y, X, Z, lasso_fit$gamma, intercept)
 
       # Convergence checking
       rhat_iterations[, iter] <- khat
@@ -96,12 +96,12 @@ calculateKhat <- function (Y, X, Z, zbeta, intercept) {
 #' @param Z Time Series in Levels
 #' @param r cointegration rank
 #' @param alpha initial value for adjustment coefficients
-#' @param Beta initial value for cointegrating vector
+#' @param beta initial value for cointegrating vector
 #' @param max.iter maximum number of iterations
 #' @param conv convergence parameter
-#' @param lambda.gamma tuning paramter short-run effects
+#' @param lambda_gamma tuning paramter short-run effects
 #' @param lambda_beta tuning paramter cointegrating vector
-#' @param rho.glasso tuning parameter inverse error covariance matrix
+#' @param rho_omega tuning parameter inverse error covariance matrix
 #' @param cutoff cutoff value time series cross-validation approach
 #' @param tol tolerance parameter glmnet function
 #' @return A list containing:
@@ -109,7 +109,7 @@ calculateKhat <- function (Y, X, Z, zbeta, intercept) {
 #' ALPHAhat: estimate of adjustment coefficients
 #' ZBETA: estimate of short-run effects
 #' OMEGA: estimate of inverse covariance matrix
-rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter = 25, conv = 10^-3, lambda.gamma = 0.001, lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), rho.glasso = 0.5, cutoff = 0.8, intercept = F, tol = 1e-04) {
+rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, beta, max.iter = 25, conv = 10^-3, lambda_gamma = 0.001, lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1), rho_omega = 0.5, cutoff = 0.8, intercept = F, tol = 1e-04) {
   # Dimensions
   q <- dim(Y)[2]
   n <- dim(Y)[1]
@@ -117,10 +117,7 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter =
   # Starting value
   if (is.null(alpha)) {
     alpha <- matrix(rnorm(q * r), ncol = r, nrow = q)
-    Beta <- matrix(rnorm(q * r), ncol = r, nrow = q)
-    Pi <- alpha %*% t(Beta)
-  } else {
-    Pi <- alpha %*% t(Beta)
+    beta <- matrix(rnorm(q * r), ncol = r, nrow = q)
   }
 
   # Convergence parameters: initialization
@@ -128,40 +125,25 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter =
   diff.obj <- 10 * conv
   Omega <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  residuals <- calcResiduals(Y, X, Z, p, Beta, alpha, intercept)
+  residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept)
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega %*% t(residuals))) - log(det(Omega))
 
 
   while ((iter < max.iter) & (diff.obj > conv)) {
-
-    # Obtain Gamma, fixed value of tuning parameter
-    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
-                                          Pi = Pi, Omega = Omega,
-                                          p = p, lambda = lambda.gamma, intercept=intercept, tol = tol, fixed=TRUE)
-    # Obtain alpha
-    alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
-                                      zbeta = gamma_fit$gamma, Omega = Omega,
-                                      r = r, P = gamma_fit$P, intercept=intercept, beta = Beta)
-    # Obtain beta and omega
-    beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
-                         zbeta = gamma_fit$gamma, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
-                         lambda_grid = lambda_beta, rho_omega = rho.glasso,
-                         rank = r, P = gamma_fit$P, cutoff = cutoff, intercept=intercept, tol = tol)
-
+    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, tol, TRUE)
 
     # Check convergence
-    beta.new <- beta_fit$beta
-    residuals <- calcResiduals(Y, X, Z, gamma_fit$gamma, beta_fit$beta, alpha_fit$alpha, intercept)
+    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept)
 
-    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
+    value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% fit$omega %*% t(residuals))) - log(det(fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
 
-    alpha <- alpha_fit$alpha
-    Beta <- beta.new
-    Pi <- alpha %*% t(beta.new) ###### Pi.init!!!
-    Omega <- beta_fit$omega
+    alpha <- fit$alpha
+    beta <- fit$beta
+    Omega <- fit$omega
     iter <- iter + 1
   }
+  fit$iter <- iter
 
-  out <- list(beta = beta_fit$beta, alpha = alpha_fit$alpha, it = iter, zbeta = gamma_fit$gamma, omega = beta_fit$omega)
+  return(fit)
 }

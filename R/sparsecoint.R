@@ -1,9 +1,11 @@
 #' Create and fit a sparsecoint model
 #'
 #' @export
-sparsecoint <- function (data, p=1, intercept=FALSE) {
+sparsecoint <- function (data, p=1, intercept=FALSE, bootstrap=FALSE) {
   model <- new_sparsecoint(data, p, intercept)
   model <- fit.sparsecoint(model)
+  if (bootstrap) model$bootstrap <- bootstrapCoefs(model, bootstrap)
+  return(model)
 }
 
 #' Fit a sparsecoint model to data
@@ -23,11 +25,11 @@ fit.sparsecoint <- function (x) {
   x$iter <- model_fit$iter
   x$alpha <- model_fit$alpha
   x$beta <- model_fit$beta
-  x$beta.lambda <- model_fit$beta.lambda
+  x$beta.lambda <- model_fit$beta_lambda
   x$gamma <- model_fit$gamma
-  x$gamma.lambda <- model_fit$gamma.lambda
+  x$gamma.lambda <- model_fit$gamma_lambda
   x$omega <- model_fit$omega
-  x$omega.rho <- model_fit$omega.rho
+  x$omega.rho <- model_fit$omega_rho
   x$fitted <- fitted(x)
   x$residuals <- residuals(x)
   x$rank <- rank$rhat

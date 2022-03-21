@@ -2,14 +2,14 @@
 #' @param Y Response Time Series
 #' @param X Time Series in Differences
 #' @param Z Time Series in Levels
-#' @param zbeta Estimate of the short-run effects
+#' @param gamma Estimate of the short-run effects
 #' @param beta Estimate of the cointegrating vector
 #' @param alpha Estimate of the adjustment coefficients
 #' @param rho A single or multiple values for the tuning parameter rho for the glasso algorithm.
 #' @return The omega matrix as estimated with glasso, and the selected value for rho.
-nts.omega <- function (Y, X, Z, zbeta, beta, alpha, rho) {
+nts.omega <- function (Y, X, Z, gamma, beta, alpha, rho) {
   # X will already have an intercept added here, so no need to specify it
-  residuals <- calcResiduals(Y, X, Z, zbeta, beta, alpha, FALSE)
+  residuals <- calcResiduals(Y, X, Z, gamma, beta, alpha, FALSE)
 
   residuals <- Re(residuals)
   cov_resid <- cov(residuals)

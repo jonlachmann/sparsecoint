@@ -4,7 +4,7 @@
 \alias{nts.alpha.procrusted}
 \title{Function to estimate alpha}
 \usage{
-nts.alpha.procrusted(Y, X, Z, zbeta, r, Omega, P, beta, intercept = F)
+nts.alpha.procrusted(Y, X, Z, zbeta, rank, Omega, P, beta, intercept = F)
 }
 \arguments{
 \item{Y}{Response Time Series}
@@ -15,7 +15,7 @@ nts.alpha.procrusted(Y, X, Z, zbeta, r, Omega, P, beta, intercept = F)
 
 \item{zbeta}{estimate of short-run effects}
 
-\item{r}{cointegration rank}
+\item{rank}{cointegration rank}
 
 \item{Omega}{estimate of inverse error covariance matrix}
 

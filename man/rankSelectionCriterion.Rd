@@ -11,12 +11,12 @@ rankSelectionCriterion(
   Z,
   r,
   alpha = NULL,
-  Beta,
+  beta,
   max.iter = 25,
   conv = 10^-3,
-  lambda.gamma = 0.001,
+  lambda_gamma = 0.001,
   lambda_beta = matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1),
-  rho.glasso = 0.5,
+  rho_omega = 0.5,
   cutoff = 0.8,
   intercept = F,
   tol = 1e-04
@@ -35,17 +35,17 @@ rankSelectionCriterion(
 
 \item{alpha}{initial value for adjustment coefficients}
 
-\item{Beta}{initial value for cointegrating vector}
+\item{beta}{initial value for cointegrating vector}
 
 \item{max.iter}{maximum number of iterations}
 
 \item{conv}{convergence parameter}
 
-\item{lambda.gamma}{tuning paramter short-run effects}
+\item{lambda_gamma}{tuning paramter short-run effects}
 
 \item{lambda_beta}{tuning paramter cointegrating vector}
 
-\item{rho.glasso}{tuning parameter inverse error covariance matrix}
+\item{rho_omega}{tuning parameter inverse error covariance matrix}
 
 \item{cutoff}{cutoff value time series cross-validation approach}
 

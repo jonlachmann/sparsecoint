@@ -8,13 +8,15 @@ nts.gamma.lassoreg(
   Y,
   X,
   Z,
-  Pi,
+  alpha,
+  beta,
   Omega,
   lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1),
   p,
   cutoff = 0.8,
   intercept = F,
-  tol = 1e-04
+  tol = 1e-04,
+  fixed = FALSE
 )
 }
 \arguments{
@@ -24,7 +26,9 @@ nts.gamma.lassoreg(
 
 \item{Z}{Time Series in Levels}
 
-\item{Pi}{estimate of cointegration space}
+\item{alpha}{Estimate of the adjustment coefficients}
+
+\item{beta}{Estimate of the cointegrating vector}
 
 \item{Omega}{estimate of inverse error covariance matrix}
 
