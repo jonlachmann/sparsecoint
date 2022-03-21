@@ -135,23 +135,23 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter =
   while ((iter < max.iter) & (diff.obj > conv)) {
 
     # Obtain Gamma, fixed value of tuning parameter
-    gamma_fit <- nts.gamma.fixed.lassoreg(Y = Y, X = X, Z = Z,
+    gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
                                           Pi = Pi, Omega = Omega,
-                                          p = p, lambda.gamma = lambda.gamma, intercept=intercept, tol = tol)
+                                          p = p, lambda = lambda.gamma, intercept=intercept, tol = tol, fixed=TRUE)
     # Obtain alpha
     alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
-                                      zbeta = gamma_fit$zbeta, Omega = Omega,
+                                      zbeta = gamma_fit$gamma, Omega = Omega,
                                       r = r, P = gamma_fit$P, intercept=intercept, beta = Beta)
     # Obtain beta and omega
     beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
-                         zbeta = gamma_fit$zbeta, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
+                         zbeta = gamma_fit$gamma, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
                          lambda_grid = lambda_beta, rho_omega = rho.glasso,
                          rank = r, P = gamma_fit$P, cutoff = cutoff, intercept=intercept, tol = tol)
 
 
     # Check convergence
     beta.new <- beta_fit$beta
-    residuals <- calcResiduals(Y, X, Z, gamma_fit$zbeta, beta_fit$beta, alpha_fit$alpha, intercept)
+    residuals <- calcResiduals(Y, X, Z, gamma_fit$gamma, beta_fit$beta, alpha_fit$alpha, intercept)
 
     value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
@@ -163,5 +163,5 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter =
     iter <- iter + 1
   }
 
-  out <- list(beta = beta_fit$beta, alpha = alpha_fit$alpha, it = iter, zbeta = gamma_fit$zbeta, omega = beta_fit$omega)
+  out <- list(beta = beta_fit$beta, alpha = alpha_fit$alpha, it = iter, zbeta = gamma_fit$gamma, omega = beta_fit$omega)
 }
