@@ -58,13 +58,12 @@ SparseCointegration_Lasso <- function(data, p, r, alpha = NULL, beta = NULL, max
                          rank = r, P = gamma_fit$P,lambda_grid = lambda_beta, rho_omega = rho_omega, cutoff = cutoff, intercept=intercept, tol = tol)
 
     # Check convergence
-    beta.new <- beta_fit$beta
     residuals <- calcResiduals(Y, X, Z, gamma_fit$gamma, beta_fit$beta, alpha_fit$alpha, intercept)
     value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% beta_fit$omega %*% t(residuals))) - log(det(beta_fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
     alpha <- alpha_fit$alpha
-    beta <- beta.new
-    Pi <- alpha %*% t(beta.new)
+    beta <- beta_fit$beta
+    Pi <- alpha %*% t(beta)
     omega <- beta_fit$omega
     iter <- iter + 1
   }

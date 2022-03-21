@@ -16,7 +16,7 @@ nts.beta(
   alpha,
   alphastar,
   lambda_grid = NULL,
-  rho.glasso,
+  rho_omega,
   cutoff,
   intercept = F,
   tol = 1e-04
@@ -41,7 +41,7 @@ nts.beta(
 
 \item{lambda_grid}{tuning paramter cointegrating vector}
 
-\item{rho.glasso}{tuning parameter inverse error covariance matrix}
+\item{rho_omega}{tuning parameter inverse error covariance matrix}
 
 \item{cutoff}{cutoff value time series cross-validation approach}
 

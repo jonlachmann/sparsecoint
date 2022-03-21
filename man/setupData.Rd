@@ -2,10 +2,17 @@
 % Please edit documentation in R/setupdata.R
 \name{setupData}
 \alias{setupData}
-\title{Set up data for the sparsecoint model by diffing and lagging it}
+\title{Set up data for the sparsecoint model by differencing and lagging it}
 \usage{
-setupData(data, p = 1)
+setupData(data, exo, p = 1)
+}
+\arguments{
+\item{data}{The data to use}
+
+\item{exo}{Exogenous data to use}
+
+\item{p}{The number of lags to use}
 }
 \description{
-Set up data for the sparsecoint model by diffing and lagging it
+Set up data for the sparsecoint model by differencing and lagging it
 }

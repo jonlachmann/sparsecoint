@@ -8,12 +8,12 @@ SparseCointegration_Lasso(
   data,
   p,
   r,
-  alpha.init = NULL,
-  beta.init = NULL,
+  alpha = NULL,
+  beta = NULL,
   max.iter = 10,
   conv = 10^-2,
-  lambda.gamma,
-  rho.glasso = seq(from = 1, to = 0.1, length = 5),
+  lambda_gamma,
+  rho_omega,
   lambda_beta,
   cutoff = 0.8,
   tol = 1e-04,
@@ -25,17 +25,17 @@ SparseCointegration_Lasso(
 
 \item{r}{cointegration rank}
 
-\item{alpha.init}{initial value for adjustment coefficients}
+\item{alpha}{initial value for adjustment coefficients}
 
-\item{beta.init}{initial value for cointegrating vector}
+\item{beta}{initial value for cointegrating vector}
 
 \item{max.iter}{maximum number of iterations}
 
 \item{conv}{convergence parameter}
 
-\item{lambda.gamma}{tuning paramter short-run effects}
+\item{lambda_gamma}{tuning paramter short-run effects}
 
-\item{rho.glasso}{tuning parameter inverse error covariance matrix}
+\item{rho_omega}{tuning parameter inverse error covariance matrix}
 
 \item{lambda_beta}{tuning paramter cointegrating vector}
 

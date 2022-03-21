@@ -10,8 +10,8 @@ rankSelectionCriterion(
   X,
   Z,
   r,
-  alpha.init = NULL,
-  beta.init,
+  alpha = NULL,
+  Beta,
   max.iter = 25,
   conv = 10^-3,
   lambda.gamma = 0.001,
@@ -33,9 +33,9 @@ rankSelectionCriterion(
 
 \item{r}{cointegration rank}
 
-\item{alpha.init}{initial value for adjustment coefficients}
+\item{alpha}{initial value for adjustment coefficients}
 
-\item{beta.init}{initial value for cointegrating vector}
+\item{Beta}{initial value for cointegrating vector}
 
 \item{max.iter}{maximum number of iterations}
 
