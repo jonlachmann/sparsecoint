@@ -43,7 +43,7 @@ nts.beta <- function(Y, X, Z, zbeta, rank, P, alpha, alphastar, lambda_grid = NU
     beta_sparse[, i] <- beta_scaled * sd(Ymatrix[, i])
   }
 
-  # Determine Omega, conditional on alpha,beta and gamma
+  # Determine Omega, conditional on alpha, beta and gamma
   omega_res <- nts.omega(Y, X, Z, zbeta, beta_sparse, alpha, rho_omega)
 
   out <- list(beta=beta_sparse, omega=omega_res$omega, rho=omega_res$rho, lambda=lambda_opt)
