@@ -12,7 +12,7 @@
 #' @return A list containing:
 #' gamma: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04) {
+nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04, fixed=FALSE) {
   # Setting dimensions
   q <- ncol(Y)
 
@@ -31,16 +31,18 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
   YmatrixP.scaled <- YmatrixP / YmatrixP.sd
   XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X))) %*% X)
 
-  # Lasso Estimation
-  # Determine lambda sequence: exclude all zero-solution
-  lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda, tol)
+  # Lasso Estimation to find the optimal lambda
+  if (!fixed) {
+    # Determine lambda sequence: exclude all zero-solution
+    lambda_restricted <- restrictLambda(YmatrixP.scaled, XmatrixP, lambda, tol)
 
-  # Rearrange X and Y to get them in time order for cross validation
-  XY <- rearrangeYX(YmatrixP, XmatrixP, q)
+    # Rearrange X and Y to get them in time order for cross validation
+    XY <- rearrangeYX(YmatrixP, XmatrixP, q)
 
-  lambda.opt <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, tol)
+    lambda <- crossValidate(q, cutoff, XY$Y, XY$X, lambda_restricted, tol)
+  }
 
-  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.opt, family = "gaussian", thresh = tol)
+  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda, family = "gaussian", thresh = tol)
   gamma_scaled <- matrix(final_lasso$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 
@@ -53,7 +55,7 @@ nts.gamma.lassoreg <- function(Y, X, Z, Pi, Omega, lambda = matrix(seq(from = 1,
     }
   }
 
-  out <- list(gamma = gamma, P = P, lambda=lambda.opt)
+  out <- list(gamma = gamma, P = P, lambda=lambda)
 }
 
 #' Function to estimate gamma, using l1 penalty, fixed value of lambda.gamma
@@ -90,19 +92,18 @@ nts.gamma.fixed.lassoreg <- function(Y, X, Z, Pi, Omega, lambda.gamma = 0.001, p
   XmatrixP <- kronecker(P %*% diag(1, q), diag(rep(1, nrow(X))) %*% X)
 
   # Lasso Estimation
-  lasso_final <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = tol)
-  gamma_scaled <- matrix(lasso_final$beta, ncol = 1)
+  final_lasso <- glmnet(y = YmatrixP.scaled, x = XmatrixP, standardize = F, intercept = F, lambda = lambda.gamma, family = "gaussian", thresh = tol)
+  gamma_scaled <- matrix(final_lasso$beta, ncol = 1)
   gamma_sparse <- gamma_scaled * YmatrixP.sd
 
-  zbeta <- matrix(NA, ncol = q, nrow = ncol(X))
-  for (i.q in 1:q)
-  {
+  gamma <- matrix(NA, ncol = q, nrow = ncol(X))
+  for (i.q in 1:q) {
     if (intercept == T) {
-      zbeta[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
+      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
     } else {
-      zbeta[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
+      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
     }
   }
 
-  out <- list(zbeta = zbeta, P = P)
+  out <- list(zbeta = gamma, P = P)
 }
