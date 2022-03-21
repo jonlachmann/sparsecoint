@@ -137,7 +137,7 @@ rankSelectionCriterion <- function(p, Y, X, Z, r, alpha = NULL, Beta, max.iter =
     # Obtain Gamma, fixed value of tuning parameter
     gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
                                           Pi = Pi, Omega = Omega,
-                                          p = p, lambda.gamma = lambda.gamma, intercept=intercept, tol = tol, fixed=TRUE)
+                                          p = p, lambda = lambda.gamma, intercept=intercept, tol = tol, fixed=TRUE)
     # Obtain alpha
     alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
                                       zbeta = gamma_fit$gamma, Omega = Omega,
