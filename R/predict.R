@@ -55,7 +55,7 @@ shiftLag <- function (new, lagged) {
 #' @return A list containing the raw sampled forecasts
 samples.predict.sparsecoint <- function (x, h=1, samples=1) {
   # Generate error samples based on the residuals
-  errors <- rmvnorm(samples, rep(0, ncol(residuals(model))), var(residuals(model)))
+  errors <- rmvnorm(samples, rep(0, ncol(residuals(x))), var(residuals(x)))
   forecasts <- vector("list", samples)
 
   for (i in seq_along(forecasts)) {
