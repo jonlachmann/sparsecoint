@@ -1,10 +1,9 @@
 #' Create and fit a sparsecoint model
 #'
 #' @export
-sparsecoint <- function (data, p=1, intercept=FALSE, bootstrap=FALSE) {
+sparsecoint <- function (data, p=1, intercept=FALSE) {
   model <- new_sparsecoint(data, p, intercept)
   model <- fit.sparsecoint(model)
-  if (bootstrap) model$bootstrap <- bootstrapCoefs(model, bootstrap)
   return(model)
 }
 

@@ -4,7 +4,7 @@
 \alias{predict.sparsecoint}
 \title{Predict using a model of class sparsecoint}
 \usage{
-\method{predict}{sparsecoint}(x, h = 1, samples = FALSE, PI = 0.05)
+\method{predict}{sparsecoint}(x, h = 1, samples = FALSE, PI = 0.95, error = 0)
 }
 \arguments{
 \item{x}{The sparsecoint model object}

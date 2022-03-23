@@ -18,8 +18,8 @@ ciPlot <- function(data, col=1, ylim=c(min(data$low[,col]),max(data$high[,col]))
 #' @method plot sparsecoint_pred
 #' @export
 plot.sparsecoint_pred <- function (pred, variable=1) {
-  if (!is.null(pred$samples)) {
-    ciPlot(matrixQuantMean(pred$samples), col=variable, main="Forecast", xlab="Horizon", ylab="Value")
+  if (is.list(pred)) {
+    ciPlot(pred$forecast, col=variable, main="Forecast", xlab="Horizon", ylab="Value")
   } else {
     plot(pred[,variable], type="l", main="Forecast", xlab="Horizon", ylab="Value")
   }
