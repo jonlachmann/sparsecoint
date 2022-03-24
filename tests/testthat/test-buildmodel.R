@@ -1,7 +1,7 @@
 
 test_that("The package is able to create a basic model and make som predictions", {
   set.seed(123)
-  data <- matrix(rnorm(300) + 1:300, 100)
+  data <- matrix(rnorm(900) + 1:900, 300)
   colnames(data) <- c("Y1", "Y2", "Y3")
 
   model <- sparsecoint(data, 12, TRUE)
@@ -13,8 +13,8 @@ test_that("The package is able to create a basic model and make som predictions"
 
   plot(pred1[,1], type="l")
 
-  plot(pred2, 2)
-  lines(201:212, col="red")
+  plot(pred2, 3)
+  lines(301:312, col="red")
   lines(101:112, col="red")
 
 

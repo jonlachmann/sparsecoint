@@ -11,7 +11,8 @@ predict.sparsecoint <- function (x, h=1, samples=FALSE, PI=0.95, error=0) {
   prediction <- matrix(NA, 0, ncol(x$data$level))
   # Create the forecast step by step
   for (i in seq_len(h)) {
-    forecast <- singlestep.sparsecoint(x$alpha, x$beta, x$gamma, t(level), diff_lag, x$intercept) + error
+    forecast <- singlestep.sparsecoint(x$alpha, x$beta, x$gamma, t(level), diff_lag, x$intercept)
+    if (error[1]) forecast <- forecast + error[i,]
     diff_lag <- shiftLag(forecast, diff_lag)
     level <- level + t(forecast)
     prediction <- rbind(prediction, level)
@@ -55,11 +56,11 @@ shiftLag <- function (new, lagged) {
 #' @return A list containing the raw sampled forecasts
 samples.predict.sparsecoint <- function (x, h=1, samples=1) {
   # Generate error samples based on the residuals
-  errors <- rmvnorm(samples, rep(0, ncol(residuals(x))), var(residuals(x)))
+  errors <- rmvnorm(samples*h, rep(0, ncol(residuals(x))), var(residuals(x)))
   forecasts <- vector("list", samples)
 
   for (i in seq_along(forecasts)) {
-    forecasts[[i]] <- predict(x, h, error=errors[i,])
+    forecasts[[i]] <- predict(x, h, error=errors[((i-1)*h+1):(i*h),])
   }
   return(forecasts)
 }
