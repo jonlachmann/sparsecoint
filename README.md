@@ -9,7 +9,7 @@ library(devtools)
 install_github("jonlachmann/glassor")
 install_github("jonlachmann/sparsecoint")
 ```
-To build a model the function ```sparsecoint``` is used, an example is given below, where a forecast is also made an plotted:
+To build a model the function ```sparsecoint``` is used, an example is given below, where a forecast is also made and plotted:
 ```
 library(sparsecoint)
 model <- sparsecoint(data, p=12, intercept=TRUE)
