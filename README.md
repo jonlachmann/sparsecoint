@@ -1,2 +1,20 @@
 # sparsecoint
-This package consists of wrapper functions around the code from the paper "Forecasting using sparse cointegration" by Ines Wilms and Christophe Croux, available at https://doi.org/10.1016/j.ijforecast.2016.04.005
+This package implements the algorithm described in the paper "Forecasting using sparse cointegration" by Ines Wilms and Christophe Croux, available at https://doi.org/10.1016/j.ijforecast.2016.04.005.
+
+The code is based on the code that was made available with the paper, but should be easier to use by a novice user.
+
+To install the package run the following:
+```
+library(devtools)
+install_github("jonlachmann/glassor")
+install_github("jonlachmann/sparsecoint")
+```
+To build a model the function ```sparesecoint``` is used, an example is given below, where a forecast is also made an plotted:
+```
+library(sparsecoint)
+model <- sparsecoint(data, p=12, intercept=TRUE)
+forecast <- predict(model, h=12)
+plot(forecast)
+```
+
+
