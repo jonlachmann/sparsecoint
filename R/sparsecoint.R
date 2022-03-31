@@ -17,6 +17,7 @@ fit.sparsecoint <- function (x) {
   rank <- determineRank(x$data, beta.init = NULL, alpha.init = NULL, p = x$p, lambda.gamma = 0.1, lambda_beta = lambda_beta, intercept=x$intercept)
   if (rank$rhat == 0) {
     x$message <- "Cointegration rank of zero detected."
+    x$rank <- rank$rhat
     return(x)
   }
 
@@ -39,8 +40,8 @@ fit.sparsecoint <- function (x) {
 #' Refit a sparsecoint model to a new set of data
 #'
 #' @export
-refit.sparsecoint <- function (x, data) {
-  x$data <- setupData(data, NULL, x$p, x$exo_p)
+refit.sparsecoint <- function (x, data, exo) {
+  x$data <- setupData(data, exo, x$p, x$exo_p)
   x$fitted <- fitted.sparsecoint(x)
   x$residuals <- tail(x$data$level, nrow(x$fitted)) - x$fitted
   return(x)
