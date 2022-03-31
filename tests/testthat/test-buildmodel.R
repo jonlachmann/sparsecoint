@@ -1,5 +1,5 @@
 
-test_that("The package is able to create a basic model and make som predictions", {
+test_that("The package is able to create a basic model and make som predictions with and without exogenous data.", {
   set.seed(123)
   data <- matrix(rnorm(900) + 1:900, 300)
   colnames(data) <- c("Y1", "Y2", "Y3")
@@ -18,11 +18,9 @@ test_that("The package is able to create a basic model and make som predictions"
   pred_exo <- predict(model_exo, 12, exo_fcst, 500)
   pred_exo2 <- predict(model_exo2, 12, exo_fcst, 500)
 
-  plot(pred, 1)
-  plot(pred_icept, 1)
-  plot(pred_exo, 1)
-  plot(pred_exo2, 1)
-  lines(301:312, col="red")
-  lines(101:112, col="red")
+  expected_pred <- matrix(c(301:312, 601:612, 901:912), 12)
 
+  expect_lt(max(abs(pred_icept$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo2$forecast$fcst - expected_pred)), 4)
 })
