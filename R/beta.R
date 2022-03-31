@@ -54,4 +54,3 @@ nts.beta <- function(Y, X, Z, gamma, rank, P, alpha, alphastar, lambda = NULL, r
 
   out <- list(beta=beta, omega=omega_res$omega, rho=omega_res$rho, lambda=lambda_opt)
 }
-

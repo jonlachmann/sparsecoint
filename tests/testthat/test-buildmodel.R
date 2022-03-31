@@ -12,15 +12,18 @@ test_that("The package is able to create a basic model and make som predictions 
 
   model_exo <- sparsecoint(data, 12, exo, 12, TRUE)
   model_exo2 <- sparsecoint(data, 12, exo, 12, FALSE)
+  model_exo3 <- sparsecoint(data, 12, exo, 6, FALSE)
 
   pred <- predict(model, 12, samples=500)
   pred_icept <- predict(model_icept, 12, samples=500)
   pred_exo <- predict(model_exo, 12, exo_fcst, 500)
   pred_exo2 <- predict(model_exo2, 12, exo_fcst, 500)
+  pred_exo3 <- predict(model_exo3, 12, exo_fcst, 500)
 
   expected_pred <- matrix(c(301:312, 601:612, 901:912), 12)
 
   expect_lt(max(abs(pred_icept$forecast$fcst - expected_pred)), 4)
   expect_lt(max(abs(pred_exo$forecast$fcst - expected_pred)), 4)
   expect_lt(max(abs(pred_exo2$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo3$forecast$fcst - expected_pred)), 4)
 })
