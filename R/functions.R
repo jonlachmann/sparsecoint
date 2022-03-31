@@ -27,13 +27,15 @@ matrixQuantiles <- function (forecast, matlist, quantiles=c(0.025, 0.975)) {
 #' @param alpha Estimate of the adjustment coefficients
 #' @param intercept Should an intercept be added to the data, default is FALSE
 #' @return The residuals
-calcResiduals <- function (Y, X, Z, gamma, beta, alpha, intercept=FALSE) {
+calcResiduals <- function (Y, X, Z, gamma, beta, alpha, intercept=FALSE, exo=NULL) {
   # Initialise zbeta if it is not provided
   if (!is.matrix(gamma)) {
     gamma <- matrix(rep(diag(1, ncol(Y)), gamma - 1), ncol = ncol(Y), byrow = T)
+    if (!is.null(exo)) gamma <- rbind(matrix(0, ncol(exo), ncol(gamma)), gamma)
     if (intercept) gamma <- rbind(0, gamma)
   }
 
+  if (!is.null(exo)) X <- cbind(exo, X)
   if (intercept) X <- cbind(1, X)
   residuals <- Y - X %*% gamma - Z %*% beta %*% t(alpha)
   return(residuals)

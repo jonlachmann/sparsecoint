@@ -4,9 +4,10 @@
 #' @return A prediction of length h
 #' @method predict sparsecoint
 #' @export
-predict.sparsecoint <- function (x, h=1, samples=FALSE, PI=0.95, error=0) {
+predict.sparsecoint <- function (x, h=1, samples=FALSE, PI=0.95, error=0, exo=NULL) {
   # Extract the data to be used to calculate the forecast
   diff_lag <- shiftLag(tail(x$data$diff, 1), tail(x$data$diff_lag, 1))
+  if (!is.null(x$data$exo)) exo_use <-
   level <- tail(x$data$level, 1)
   prediction <- matrix(NA, 0, ncol(x$data$level))
   # Create the forecast step by step
@@ -33,7 +34,8 @@ predict.sparsecoint <- function (x, h=1, samples=FALSE, PI=0.95, error=0) {
 #' @param diff_lag_data The differenced and lagged data just before the prediction
 #' @param intercept Does the model include an intercept, default is FALSE
 #' @return A single step forecast
-singlestep.sparsecoint <- function (alpha, beta, gamma, level_data, diff_lag_data, intercept=FALSE) {
+singlestep.sparsecoint <- function (alpha, beta, gamma, level_data, diff_lag_data, intercept=FALSE, exo=NULL) {
+  if (!is.null(exo)) diff_lag_data <- c(exo, diff_lag_data)
   if (intercept) diff_lag_data <- c(1, diff_lag_data)
   forecast <- alpha %*% t(beta) %*% level_data + t(gamma) %*% diff_lag_data
 }

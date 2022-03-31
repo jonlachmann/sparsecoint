@@ -38,15 +38,15 @@ SparseCointegration_Lasso <- function(data, p, r, alpha = NULL, beta = NULL, max
   diff.obj <- 10 * conv
   Omega <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept)
+  residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept, data$exo)
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega %*% t(residuals))) - log(det(Omega))
 
 
   while ((iter < max.iter) & (diff.obj > conv)) {
-    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, tol)
+    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, data$exo, tol)
 
     # Check convergence
-    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept)
+    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept, data$exo)
     value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% fit$omega %*% t(residuals))) - log(det(fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
     alpha <- fit$alpha
@@ -60,20 +60,20 @@ SparseCointegration_Lasso <- function(data, p, r, alpha = NULL, beta = NULL, max
   return(fit)
 }
 
-sparseCointegrationFit <- function (Y, Z, X, alpha, omega, beta, p, rank, lambda_gamma, lambda_beta, omega_rho, cutoff, intercept, tol, fixed=FALSE) {
+sparseCointegrationFit <- function (Y, Z, X, alpha, omega, beta, p, rank, lambda_gamma, lambda_beta, omega_rho, cutoff, intercept, exo=NULL, tol, fixed=FALSE) {
   # Obtain Gamma
   gamma_fit <- nts.gamma.lassoreg(Y = Y, X = X, Z = Z,
                                   alpha = alpha, beta = beta, Omega = omega,
-                                  p = p, lambda = lambda_gamma, intercept = intercept, tol = tol, fixed=fixed)
+                                  p = p, lambda = lambda_gamma, intercept = intercept, exo = exo, tol = tol, fixed=fixed)
   # Obtain Alpha
   alpha_fit <- nts.alpha.procrusted(Y = Y, X = X, Z = Z,
                                     zbeta = gamma_fit$gamma, Omega = omega,
-                                    rank = rank, P = gamma_fit$P, beta = beta, intercept = intercept)
+                                    rank = rank, P = gamma_fit$P, beta = beta, intercept = intercept, exo = exo)
   # Obtain Beta and Omega
   beta_fit <- nts.beta(Y = Y, X = X, Z = Z,
                        gamma = gamma_fit$gamma, alpha = alpha_fit$alpha, alphastar = alpha_fit$alpha_star,
                        lambda = lambda_beta, rho_omega = omega_rho,
-                       rank = rank, P = gamma_fit$P, cutoff = cutoff, intercept=intercept, tol = tol)
+                       rank = rank, P = gamma_fit$P, cutoff = cutoff, intercept = intercept, exo = exo, tol = tol)
 
   return(list(gamma=gamma_fit$gamma, alpha=alpha_fit$alpha, beta=beta_fit$beta, omega=beta_fit$omega,
               gamma_lambda=gamma_fit$lambda, beta_lambda=beta_fit$lambda, omega_rho=beta_fit$rho))
