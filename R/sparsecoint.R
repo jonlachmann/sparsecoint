@@ -68,8 +68,8 @@ fitted.sparsecoint <- function (x, recalculate=FALSE) {
 
   fitted <- matrix(NA, nrow(x$data$level)-1, ncol(x$data$level))
   for (i in seq_len(nrow(x$data$level)-1)) {
-    if (is.null(x$data$exo)) exo <- NULL
-    else exo <- x$data$exo[i,]
+    if (is.null(x$data$exo_diff)) exo <- NULL
+    else exo <- x$data$exo_diff[i,]
     diff_lag <- shiftLag(x$data$diff[i,], x$data$diff_lag[i,])
     fitted[i,] <- singlestep.sparsecoint(x$alpha, x$beta, x$gamma, x$data$level[i,], diff_lag, x$intercept, exo)
     fitted[i,] <- fitted[i,] + x$data$level[i,]

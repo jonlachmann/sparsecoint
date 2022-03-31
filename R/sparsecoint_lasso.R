@@ -38,15 +38,15 @@ SparseCointegration_Lasso <- function(data, p, r, alpha = NULL, beta = NULL, max
   diff.obj <- 10 * conv
   Omega <- diag(1, q)
   value.obj <- matrix(NA, ncol = 1, nrow = max.iter + 1)
-  residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept, data$exo)
+  residuals <- calcResiduals(Y, X, Z, p, beta, alpha, intercept, data$exo_diff)
   value.obj[1, ] <- (1 / n) * sum(diag(residuals %*% Omega %*% t(residuals))) - log(det(Omega))
 
 
   while ((iter < max.iter) & (diff.obj > conv)) {
-    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, data$exo, tol)
+    fit <- sparseCointegrationFit(Y, Z, X, alpha, Omega, beta, p, r, lambda_gamma, lambda_beta, rho_omega, cutoff, intercept, data$exo_diff, tol)
 
     # Check convergence
-    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept, data$exo)
+    residuals <- calcResiduals(Y, X, Z, fit$gamma, fit$beta, fit$alpha, intercept, data$exo_diff)
     value.obj[1 + iter, ] <- (1 / n) * sum(diag((residuals) %*% fit$omega %*% t(residuals))) - log(det(fit$omega))
     diff.obj <- abs(value.obj[1 + iter, ] - value.obj[iter, ]) / abs(value.obj[iter, ])
     alpha <- fit$alpha

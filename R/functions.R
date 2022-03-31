@@ -18,6 +18,17 @@ matrixQuantiles <- function (forecast, matlist, quantiles=c(0.025, 0.975)) {
   return(list(fcst=forecast, sd=mat_sd, low=mat_low, high=mat_high))
 }
 
+#' Check the formatting of exogenous data
+#' @param exo The exogenous data to check
+#' @param n_obs The number of observations it should have
+#' @param exo_K The number of exogenous variables exo should have
+checkExo <- function (exo, n_obs, exo_K=NULL) {
+  if (!is.matrix(exo)) stop("The exogenous data must be a matrix.")
+  if (is.null(exo_K)) exo_K <- ncol(exo)
+  if (nrow(exo) != n_obs) stop("The exogenous data must contain the same number of observations as the endogenous.")
+  if (ncol(exo) != exo_K) stop ("The exogenous data must contain the same number of variables as is modeled.")
+}
+
 #' Calculate the residuals
 #' @param Y Response Time Series
 #' @param X Time Series in Differences

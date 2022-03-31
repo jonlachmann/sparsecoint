@@ -61,10 +61,10 @@ determineRank <- function(data, r.init = NULL, p, max.iter.lasso = 3, conv.lasso
                                           beta = beta.init.fit, alpha = alpha.init.fit,
                                           p = p, r = r.init, max.iter = max.iter.lasso, conv = conv.lasso,
                                           lambda_gamma = lambda.gamma, lambda_beta = lambda_beta, rho_omega = rho.glasso,
-                                          intercept = intercept, exo = data$exo, tol = tol)
+                                          intercept = intercept, exo = data$exo_diff, tol = tol)
 
       # Response and predictors in penalized reduced rank regression
-      khat <- calculateKhat(Y, X, Z, lasso_fit$gamma, intercept, data$exo)
+      khat <- calculateKhat(Y, X, Z, lasso_fit$gamma, intercept, data$exo_diff)
 
       # Convergence checking
       rhat_iterations[, iter] <- khat

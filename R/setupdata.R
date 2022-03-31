@@ -8,10 +8,12 @@ setupData <- function (data, exo, p=1, exo_p=p) {
   temp_data <- embed(diff(data), p)
   if (!is.null(exo)) {
     temp_exo_data <- embed(diff(exo), exo_p)
-    exo <- tail(temp_exo_data, nrow(temp_data))
+    exo_diff <- tail(temp_exo_data, nrow(temp_data))
+  } else {
+    exo_diff <- NULL
   }
   level <- tail(data, nrow(temp_data))
   diff <- temp_data[,seq_len(q)]
   diff_lag <- temp_data[,-seq_len(q)]
-  return(list(level=level, diff=diff, diff_lag=diff_lag, exo=exo))
+  return(list(level=level, diff=diff, diff_lag=diff_lag, exo=exo, exo_diff=exo_diff))
 }
