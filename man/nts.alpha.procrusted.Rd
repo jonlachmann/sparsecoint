@@ -4,7 +4,18 @@
 \alias{nts.alpha.procrusted}
 \title{Function to estimate alpha}
 \usage{
-nts.alpha.procrusted(Y, X, Z, zbeta, rank, Omega, P, beta, intercept = F)
+nts.alpha.procrusted(
+  Y,
+  X,
+  Z,
+  zbeta,
+  rank,
+  Omega,
+  P,
+  beta,
+  intercept = F,
+  exo = NULL
+)
 }
 \arguments{
 \item{Y}{Response Time Series}

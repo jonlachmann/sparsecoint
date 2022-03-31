@@ -19,6 +19,7 @@ nts.beta(
   rho_omega,
   cutoff,
   intercept = F,
+  exo = NULL,
   tol = 1e-04
 )
 }

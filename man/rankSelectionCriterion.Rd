@@ -19,6 +19,7 @@ rankSelectionCriterion(
   rho_omega = 0.5,
   cutoff = 0.8,
   intercept = F,
+  exo = NULL,
   tol = 1e-04
 )
 }

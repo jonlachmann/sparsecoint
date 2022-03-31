@@ -4,7 +4,7 @@
 \alias{new_sparsecoint}
 \title{Create a new model object}
 \usage{
-new_sparsecoint(data, p = 1, intercept = FALSE)
+new_sparsecoint(data, p = 1, exo = NULL, exo_p = p, intercept = FALSE)
 }
 \arguments{
 \item{data}{The data to use}

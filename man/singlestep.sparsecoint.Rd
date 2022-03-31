@@ -10,7 +10,8 @@ singlestep.sparsecoint(
   gamma,
   level_data,
   diff_lag_data,
-  intercept = FALSE
+  intercept = FALSE,
+  exo = NULL
 )
 }
 \arguments{

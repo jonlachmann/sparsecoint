@@ -15,6 +15,7 @@ nts.gamma.lassoreg(
   p,
   cutoff = 0.8,
   intercept = F,
+  exo = NULL,
   tol = 1e-04,
   fixed = FALSE
 )

@@ -4,7 +4,7 @@
 \alias{sparsecoint}
 \title{Create and fit a sparsecoint model}
 \usage{
-sparsecoint(data, p = 1, intercept = FALSE)
+sparsecoint(data, p = 1, exo = NULL, exo_p = p, intercept = FALSE)
 }
 \description{
 Create and fit a sparsecoint model

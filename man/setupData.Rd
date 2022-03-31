@@ -4,7 +4,7 @@
 \alias{setupData}
 \title{Set up data for the sparsecoint model by differencing and lagging it}
 \usage{
-setupData(data, exo, p = 1)
+setupData(data, exo, p = 1, exo_p = p)
 }
 \arguments{
 \item{data}{The data to use}
