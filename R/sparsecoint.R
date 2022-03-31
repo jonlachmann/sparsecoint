@@ -1,8 +1,8 @@
 #' Create and fit a sparsecoint model
 #'
 #' @export
-sparsecoint <- function (data, p=1, intercept=FALSE) {
-  model <- new_sparsecoint(data, p, intercept)
+sparsecoint <- function (data, p=1, exo=NULL, exo_p=p, intercept=FALSE) {
+  model <- new_sparsecoint(data, p, exo, exo_p, intercept)
   model <- fit.sparsecoint(model)
   return(model)
 }
@@ -14,7 +14,7 @@ fit.sparsecoint <- function (x) {
   lambda_beta <- matrix(seq(from = 1, to = 0.001, length = 20), nrow = 1)
   rho_omega <- seq(from = 1, to = 0.1, length = 5)
 
-  rank <- determineRank(x$data, beta.init = NULL, alpha.init = NULL, p = x$p, lambda.gamma = lambda_gamma, lambda_beta = lambda_beta, intercept=x$intercept)
+  rank <- determineRank(x$data, beta.init = NULL, alpha.init = NULL, p = x$p, lambda.gamma = 0.1, lambda_beta = lambda_beta, intercept=x$intercept)
   if (rank$rhat == 0) {
     x$message <- "Cointegration rank of zero detected."
     return(x)
@@ -40,7 +40,7 @@ fit.sparsecoint <- function (x) {
 #'
 #' @export
 refit.sparsecoint <- function (x, data) {
-  x$data <- setupData(data, NULL, x$p)
+  x$data <- setupData(data, NULL, x$p, x$exo_p)
   x$fitted <- fitted.sparsecoint(x)
   x$residuals <- tail(x$data$level, nrow(x$fitted)) - x$fitted
   return(x)
@@ -51,9 +51,10 @@ refit.sparsecoint <- function (x, data) {
 #' @param p The lag order to use
 #' @param intercept Should an intercept be included, default is FALSE
 #' @return A new model of the class sparsecoint
-new_sparsecoint <- function (data, p=1, intercept=FALSE) {
-  data <- setupData(data, NULL, p)
-  structure(list(data=data, p=p, intercept=intercept),
+new_sparsecoint <- function (data, p=1, exo=NULL, exo_p=p, intercept=FALSE) {
+  if (exo_p > p) stop("Exogenous data cannot have more lags than the endogenous.")
+  data <- setupData(data, exo, p, exo_p)
+  structure(list(data=data, p=p, intercept=intercept, exo_p=exo_p),
             class="sparsecoint")
 }
 
@@ -67,8 +68,10 @@ fitted.sparsecoint <- function (x, recalculate=FALSE) {
 
   fitted <- matrix(NA, nrow(x$data$level)-1, ncol(x$data$level))
   for (i in seq_len(nrow(x$data$level)-1)) {
+    if (is.null(x$data$exo_diff)) exo <- NULL
+    else exo <- x$data$exo_diff[i,]
     diff_lag <- shiftLag(x$data$diff[i,], x$data$diff_lag[i,])
-    fitted[i,] <- singlestep.sparsecoint(x$alpha, x$beta, x$gamma, x$data$level[i,], diff_lag, x$intercept)
+    fitted[i,] <- singlestep.sparsecoint(x$alpha, x$beta, x$gamma, x$data$level[i,], diff_lag, x$intercept, exo)
     fitted[i,] <- fitted[i,] + x$data$level[i,]
   }
   return(fitted)

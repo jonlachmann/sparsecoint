@@ -11,8 +11,9 @@
 #' @return A list containing:
 #' alpha: estimate of adjustment coefficients
 #' alphastar: estimate of transformed adjustment coefficients
-nts.alpha.procrusted <- function(Y, X, Z, zbeta, rank, Omega, P, beta, intercept = F) {
+nts.alpha.procrusted <- function(Y, X, Z, zbeta, rank, Omega, P, beta, intercept = F, exo = NULL) {
   # Data matrices
+  if (!is.null(exo)) X <- cbind(exo, X)
   if (intercept) X <- cbind(1, X)
   Ymatrix <- Y - X %*% zbeta
 

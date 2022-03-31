@@ -1,25 +1,29 @@
 
-test_that("The package is able to create a basic model and make som predictions", {
+test_that("The package is able to create a basic model and make som predictions with and without exogenous data.", {
   set.seed(123)
   data <- matrix(rnorm(900) + 1:900, 300)
   colnames(data) <- c("Y1", "Y2", "Y3")
 
-  model <- sparsecoint(data, 12, TRUE)
+  exo <- matrix(rnorm(300) + 1:300, ncol=1)
+  exo_fcst <- matrix(rnorm(12) + 301:312, ncol=1)
 
-  pred1 <- predict(model, 12)
-  pred2 <- predict(model, 12, 500)
+  model <- sparsecoint(data, 12, intercept=FALSE)
+  model_icept <- sparsecoint(data, 12, intercept=TRUE)
 
-  class(pred2)
+  model_exo <- sparsecoint(data, 12, exo, 12, TRUE)
+  model_exo2 <- sparsecoint(data, 12, exo, 12, FALSE)
+  model_exo3 <- sparsecoint(data, 12, exo, 6, FALSE)
 
-  plot(pred1[,1], type="l")
+  pred <- predict(model, 12, samples=500)
+  pred_icept <- predict(model_icept, 12, samples=500)
+  pred_exo <- predict(model_exo, 12, exo_fcst, 500)
+  pred_exo2 <- predict(model_exo2, 12, exo_fcst, 500)
+  pred_exo3 <- predict(model_exo3, 12, exo_fcst, 500)
 
-  plot(pred2, 3)
-  lines(301:312, col="red")
-  lines(101:112, col="red")
+  expected_pred <- matrix(c(301:312, 601:612, 901:912), 12)
 
-
-  summary(model)
-
-  pred1 - pred2$forecast$fcst
-
+  expect_lt(max(abs(pred_icept$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo2$forecast$fcst - expected_pred)), 4)
+  expect_lt(max(abs(pred_exo3$forecast$fcst - expected_pred)), 4)
 })

@@ -18,10 +18,11 @@
 #' @return A list containing:
 #' BETA: estimate of cointegrating vectors
 #' OMEGA: estimate of inverse covariance matrix
-nts.beta <- function(Y, X, Z, gamma, rank, P, alpha, alphastar, lambda = NULL, rho_omega, cutoff, intercept = F, tol = 1e-04) {
+nts.beta <- function(Y, X, Z, gamma, rank, P, alpha, alphastar, lambda = NULL, rho_omega, cutoff, intercept = F, exo = NULL, tol = 1e-04) {
   if (is.null(lambda)) lambda <- matrix(seq(from = 2, to = 0.001, length = 100), nrow = 1)
 
   # Data matrices
+  if (!is.null(exo)) X <- cbind(exo, X)
   if (intercept) X <- cbind(1, X)
   Ymatrix <- (Y - X %*% gamma) %*% t(P) %*% alphastar
 
@@ -53,4 +54,3 @@ nts.beta <- function(Y, X, Z, gamma, rank, P, alpha, alphastar, lambda = NULL, r
 
   out <- list(beta=beta, omega=omega_res$omega, rho=omega_res$rho, lambda=lambda_opt)
 }
-

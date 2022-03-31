@@ -13,12 +13,13 @@
 #' @return A list containing:
 #' gamma: estimate of short-run effects
 #' P: transformation matrix P derived from Omega
-nts.gamma.lassoreg <- function(Y, X, Z, alpha, beta, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, tol = 1e-04, fixed=FALSE) {
+nts.gamma.lassoreg <- function(Y, X, Z, alpha, beta, Omega, lambda = matrix(seq(from = 1, to = 0.01, length = 10), nrow = 1), p, cutoff = 0.8, intercept = F, exo = NULL, tol = 1e-04, fixed=FALSE) {
   # Setting dimensions
   q <- ncol(Y)
 
   # Creating data matrices
   Y.matrix <- Y - Z %*% t(alpha %*% t(beta))
+  if (!is.null(exo)) X <- cbind(exo, X)
   if (intercept) X <- cbind(1, X)
 
   # Compute transformation matrix P
@@ -49,11 +50,7 @@ nts.gamma.lassoreg <- function(Y, X, Z, alpha, beta, Omega, lambda = matrix(seq(
 
   gamma <- matrix(NA, ncol = q, nrow = ncol(X))
   for (i.q in 1:q) {
-    if (intercept == T) {
-      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q + 1) + 1):(i.q * (1 + (p - 1) * q))]
-    } else {
-      gamma[, i.q] <- gamma_sparse[((i.q - 1) * ((p - 1) * q) + 1):(i.q * ((p - 1) * q))]
-    }
+    gamma[, i.q] <- gamma_sparse[seq_len(ncol(X)) + (i.q - 1) * ncol(X)]
   }
 
   out <- list(gamma = gamma, P = P, lambda=lambda)
