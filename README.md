@@ -17,4 +17,5 @@ forecast <- predict(model, h=12)
 plot(forecast)
 ```
 
+![Forecast plot](forecast.png?raw=true "Forecast")
 
