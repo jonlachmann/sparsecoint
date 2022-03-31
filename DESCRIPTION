@@ -3,6 +3,9 @@ Type: Package
 Title: Forecasting using sparse cointegration
 Version: 1.0
 Date: 2021-12-22
+Authors@R: c(
+    person("Indicio Technologies AB", email = "info@indicio.com", role=c("aut")),
+	person("Jon", "Lachmann", email = "jon@indicio.com", role = c("aut", "cre")))
 Author: Jon Lachmann
 Maintainer: Jon Lachmann <jon@lachmann.nu>
 Description: Implementing the sparse cointegration algorithm by Wilms and Croux.
